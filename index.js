@@ -155,7 +155,7 @@ function commandNowPlaying(msg, argument) {
 
     let requestedBy = radioJSON.requested_by ? `\n**Requested by:** ${radioJSON.requested_by}` : '';
     let anime = radioJSON.anime_name ? `\n**Anime:** ${radioJSON.anime_name}` : '';
-    msg.channel.sendMessage(`**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${requestedBy}${anime}`);
+    msg.channel.sendMessage(`**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${anime}${requestedBy}`);
 }
 
 function commandHelp(msg, argument) {
