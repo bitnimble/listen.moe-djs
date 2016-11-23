@@ -153,7 +153,7 @@ function commandNowPlaying(msg, argument) {
     if (radioJSON === {})
         return;
 
-    let requestedBy = radioJSON.requested_by ? `\n**Requested by:** ${radioJSON.requested_by} (<https://forum.listen.moe/u/${radioJSON.requested_by}>)` : '';
+    let requestedBy = radioJSON.requested_by ? `\n**Requested by:** ${radioJSON.requested_by}` : '';
     let anime = radioJSON.anime_name ? `\n**Anime:** ${radioJSON.anime_name}` : '';
     msg.channel.sendMessage(`**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${requestedBy}${anime}`);
 }
