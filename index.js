@@ -10,9 +10,9 @@ let HTTPS = require("https");
 let CommandHelper = require('./CommandHelper');
 
 const HELP_MESSAGE = `
-'**LISTEN.moe streaming bot by Geo1088 & friends**',
+'**LISTEN.moe streaming bot by Geo1088 & friends**
 
-**Usage:**',
+**Usage:**
     After adding me to your server, join a voice channel and type \`~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
 
 **Commands:**
