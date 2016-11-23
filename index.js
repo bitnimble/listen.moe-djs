@@ -10,14 +10,14 @@ let HTTPS = require("https");
 let CommandHelper = require('./CommandHelper');
 
 const HELP_MESSAGE = `
-'**LISTEN.moe streaming bot by Geo1088 & friends**
+**LISTEN.moe streaming bot by Geo1088 & friends**
 
 **Usage:**
-    After adding me to your server, join a voice channel and type \`~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
+    After adding me to your server, join a voice channel and type \`\\~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
 
 **Commands:**
-    **~~join**: Joins current Voice Channel
-    **~~np**: Displays the Currently Playing song
+    **\\~~join**: Joins current Voice Channel
+    **\\~~np**: Displays the Currently Playing song
 
 For additional commands and help, please visit: <https://github.com/Geo1088/listen.moe-streaming-bot>`;
 
