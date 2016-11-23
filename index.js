@@ -79,7 +79,7 @@ function joinVoices(connectList, i) {
                 joinVoices(connectList, i + 1);
                 return;
             }
-            voiceChannel.join().then(vc => {
+            voiceChannel.join({ shared: true }).then(vc => {
                 if (vc) {
                     vc.setSpeaking(true);
                     vc.playSharedStream("listen.moe", stream);
