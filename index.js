@@ -223,7 +223,7 @@ commandHelper.register("join", commandJoin);
 commandHelper.register('stats', commandStats);
 
 //Now for the main stuff...
-client.on('debug', console.log);
+//client.on('debug', console.log);
 client.on("message", msg => { commandHelper.process(msg); });
 
 function currentListeners() {
