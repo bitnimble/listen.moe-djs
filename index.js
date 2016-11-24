@@ -189,17 +189,11 @@ client.on("message", msg => {
 
 function currentListeners() {
     let userCount = 0;
-    // For every guild
-    client.guilds.forEach(g => {
-        // For every channel that is a voice channel and we're in
-        g.channels.filter(c => c.type == "voice" ? c.members.get(client.user.id) : false).forEach(c => {
-            // get the number of undeafaned users that aren't us in the currently-iterating channel
-            // dw about it
-            let voiceUsers = c.members.filter(m => m.id !== client.user.id && !m.selfDeaf && !m.deaf).length;
-            // Add the number of members in this channel, not counting ourself
-            userCount += voiceUsers;
-        })
-    })
+    //Iterate through all our voice connections' channels and count the number of other users
+    client.voiceConnections
+        .map(vc => vc.channel)
+        .forEach(c => userCount += c.members.filter(m => !m.selfDeaf && !m.deaf).size - 1);
+    
     listeners = userCount;
     setTimeout(currentListeners, 20000);
 }
