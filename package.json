@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "discord.js": "github:anonymousthing/discord.js",
+    "discord.js": "github:kanadeko/discord.js#indev",
 	"opusscript": "*",
     "merge": "^1.2.0",
     "request": "^2.74.0",

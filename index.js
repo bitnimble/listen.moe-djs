@@ -176,16 +176,57 @@ function commandJoin(msg, argument) {
     }
 }
 
+function commandStats(msg, argument) {
+    // Eval command - Allows the owner to dynamically run scripts against the bot from inside Discord
+    // Requires explicit owner permission inside the config file
+    if (!config.owners.includes(msg.author.id))
+        return msg.channel.sendMessage('soz bae must be bot owner');
+
+    let users = 0;
+    client.voiceConnections.map(vc => vc.channel).forEach(c => users += c.members.filter(m => !m.selfDeaf && !m.deaf).size - 1);
+
+    let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
+    let last = `**Last song:** ${radioJSON.last.song_name} **by** ${radioJSON.last.artist_name}`;
+    let requestedBy = radioJSON.requested_by ? `**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+    let description = `${nowplaying}\n${requestedBy}\n\n${last}`;
+
+    msg.channel.sendMessage('', {
+        embed:{
+            title: 'LISTEN.moe (Click here to add the radio bot to your server)',
+            url: 'https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot',
+            description: description,
+            color: 15473237,
+            fields: [
+                //{ name: 'Now playing', value: `${radioJSON.song_name} by ${radioJSON.artist_name}`},
+                { name: 'Radio Listeners', value: `${radioJSON.listeners}`, inline: true },
+                { name: 'Discord Listeners', value: users, inline: true },
+                { name: 'Servers', value: client.guilds.size, inline: true },
+                { name: 'Voice Channels', value: client.voiceConnections.size, inline: true }
+            ],
+            timestamp: new Date(),
+            thumbnail: {
+                url: 'http://i.imgur.com/Jfz6qak.png'
+            },
+            author: {
+                url: 'https://github.com/anonymousthing/listen.moe-djs',
+                name: 'by Geo1088 & friends',
+                icon_url: 'https://avatars0.githubusercontent.com/u/4165301?v=3&s=72'
+            },
+        }
+    });
+}
+
 commandHelper.register("eval", commandEval);
 commandHelper.register("np", commandNowPlaying);
 commandHelper.register("help", commandHelp);
 commandHelper.register("join", commandJoin);
+commandHelper.register('stats', commandStats);
 
 //Now for the main stuff...
 
 client.on("message", msg => {
     commandHelper.process(msg);
-})
+});
 
 function currentListeners() {
     let userCount = 0;
@@ -193,9 +234,24 @@ function currentListeners() {
     client.voiceConnections
         .map(vc => vc.channel)
         .forEach(c => userCount += c.members.filter(m => !m.selfDeaf && !m.deaf).size - 1);
-    
+
     listeners = userCount;
     setTimeout(currentListeners, 20000);
+}
+
+function gameCurrentSong () {
+    let game = 'music probably';
+    if(radioJSON !== {})
+        game = `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`;
+
+    client.user.setGame(game);
+    setTimeout(gameCurrentUsersAndGuilds, 20000);
+}
+
+// Changes the bot's game to a listener and guild count
+function gameCurrentUsersAndGuilds () {
+    client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+    setTimeout(gameCurrentSong, 10000);
 }
 
 function sendListenersData() {
@@ -221,6 +277,7 @@ client.once('ready', () => {
 
     //Initialise timer loops
     currentListeners();
+    gameCurrentSong();
 
     if (config.listenersReportURL)
         sendListenersData();
