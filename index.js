@@ -186,9 +186,8 @@ function commandStats(msg, argument) {
     client.voiceConnections.map(vc => vc.channel).forEach(c => users += c.members.filter(m => !m.selfDeaf && !m.deaf).size - 1);
 
     let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
-    let last = `**Last song:** ${radioJSON.last.song_name} **by** ${radioJSON.last.artist_name}`;
-    let requestedBy = radioJSON.requested_by ? `**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
-    let description = `${nowplaying}\n${requestedBy}\n\n${last}`;
+    let requestedBy = radioJSON.requested_by ? `\n**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+    let description = `\n${nowplaying}${requestedBy}\n`;
 
     msg.channel.sendMessage('', {
         embed:{
