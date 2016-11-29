@@ -276,8 +276,8 @@ client.once('ready', () => {
     currentListeners();
     gameCurrentSong();
 
-    if (config.listenersReportURL)
-        sendListenersData();
+    //if (config.listenersReportURL)
+    //    sendListenersData();
 })
 
 client.login(config.token)
