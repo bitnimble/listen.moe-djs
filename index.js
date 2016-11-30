@@ -68,35 +68,38 @@ function joinVoices(connectList, i) {
     let guild = connectList[i].guild;
     let channel = connectList[i].channel;
     let cc = client.voiceConnections.get(guild); // Find a current connection in this guild
-    if (cc) {
-        console.log("Boop");
-    } else { // Looks like we'll need to make a new one
-        // Create a new voice connection and join the channel
-        let guildObj = client.guilds.get(guild);
-        if (guildObj) {
-            let voiceChannel = guildObj.channels.get(channel);
-            if (!voiceChannel) {
-                joinVoices(connectList, i + 1);
-                return;
-            }
-            voiceChannel.join({ shared: true }).then(vc => {
-                if (vc) {
+    let isNewConnection = !cc;
+    
+    let guildObj = client.guilds.get(guild);
+    if (guildObj) {
+        let voiceChannel = guildObj.channels.get(channel);
+        if (!voiceChannel) {
+            joinVoices(connectList, i + 1);
+            return;
+        }
+        voiceChannel.join({ shared: true }).then(vc => {
+            if (vc) {
+                if (isNewConnection) {
                     vc.setSpeaking(true);
                     vc.playSharedStream("listen.moe", stream);
-                    let realGuild = client.guilds.get(guild);
-                    console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`);
                 }
-                joinVoices(connectList, i + 1);
-            }).catch(error => {
-                console.log('Error connecting to channel ' + channel + ' | ' + error);
-                joinVoices(connectList, i + 1);
-            });
-        } else {
+                let realGuild = client.guilds.get(guild);
+                if (isNewConnection)
+                    console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`);
+                else
+                    console.log(`Moved voice connection for guild ${realGuild.name} (${realGuild.id}) to a different channel`);
+            }
             joinVoices(connectList, i + 1);
-        }
+        }).catch(error => {
+            if (isNewConnection)
+                console.log('Error connecting to channel ' + channel + ' | ' + error);
+            else
+                console.log('Error moving to channel ' + channel + ' | ' + error);
+            joinVoices(connectList, i + 1);
+        });
+    } else {
+        joinVoices(connectList, i + 1);
     }
-
-    // wew that was a lot of comments
 }
 
 function joinVoice(guild, channel) {
