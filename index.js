@@ -281,3 +281,7 @@ client.once('ready', () => {
 })
 
 client.login(config.token)
+
+process.on("unhandledRejection", err => {
+    console.error("Uncaught Promise Error: \n" + err.stack);
+});
