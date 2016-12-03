@@ -1,3 +1,4 @@
+require( "console-stamp" )( console, { pattern : "dd/mm/yyyy HH:MM:ss" } );
 let Discord = require('discord.js');
 let config = require('./config.json');
 let guilds = require('./guilds.json');
