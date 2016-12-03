@@ -286,5 +286,11 @@ client.once('ready', () => {
 client.login(config.token)
 
 process.on("unhandledRejection", err => {
-    console.error("Uncaught Promise Error: \n" + err.stack);
+    console.error(printTime() + "Uncaught Promise Error: \n" + err.stack);
 });
+
+function printTime(){
+    var now = new Date();
+    now = now.getFullYear() + '/' + now.getMonth() + '/' + now.getDate() + ' ' + (now.getHours() < 10 ? '0' : '') + now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes() + ':' + (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
+    return '[' + now + '] ';
+}
