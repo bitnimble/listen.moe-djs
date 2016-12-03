@@ -227,6 +227,7 @@ commandHelper.register('stats', commandStats);
 //Now for the main stuff...
 //client.on('debug', console.log);
 client.on("message", msg => { commandHelper.process(msg); });
+client.on("guildCreate", guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
 function currentListeners() {
     let userCount = 0;
