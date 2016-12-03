@@ -13,7 +13,7 @@ const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
 
 **Usage:**
-    After adding me to your server, join a voice channel and type \`\\~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
+    After adding me to your server, join a voice channel and type \`~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
 
 **Commands:**
     **\\~~join**: Joins current Voice Channel
