@@ -179,6 +179,21 @@ function commandJoin(msg, argument) {
     }
 }
 
+function commandLeave(msg, argument) {
+    if (!canManageGuild(msg.member))
+        return;
+    let guild = msg.guild.id;
+    let vc = client.voiceConnections.get(guild);
+    if (!vc)
+        msg.channel.sendMessage("Bot is not in a channel!");
+    else {
+        vc.leaveSharedStream();
+        vc.disconnect();
+        writeGuildConfig(guild, { vc: null });
+        msg.channel.sendMessage(";_; o-okay...");
+    }
+}
+
 function commandStats(msg, argument) {
     // Eval command - Allows the owner to dynamically run scripts against the bot from inside Discord
     // Requires explicit owner permission inside the config file
@@ -222,7 +237,8 @@ commandHelper.register("eval", commandEval);
 commandHelper.register("np", commandNowPlaying);
 commandHelper.register("help", commandHelp);
 commandHelper.register("join", commandJoin);
-commandHelper.register('stats', commandStats);
+commandHelper.register("stats", commandStats);
+commandHelper.register("leave", commandLeave);
 
 //Now for the main stuff...
 //client.on('debug', console.log);
