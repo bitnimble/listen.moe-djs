@@ -38,7 +38,7 @@ let radioJSON = {};
 let socket = io.connect(config.streamInfo);
 socket.on('update', (obj) => {
     try {
-        radioJSON = JSON.parse(obj);
+        radioJSON = obj;
     } catch (e) {
         console.log(e)
     }
