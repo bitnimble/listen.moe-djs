@@ -28,12 +28,6 @@ This list assumes a prefix of `~~`.
 - `~~unignore`  
   Unignores commands in the current channel.
 
-- `~~ignoreall`  
-  Ignores commands from all channels in the server.
-
-- `~~unignoreall`  
-  Unignores commands from all channels in the server.
-
 - `~~prefix <new prefix>`  
   Changes the bot's prefix for this server. Prefixes cannot contain whitespace, letters, or numbers - anything else is fair game. It's recommended that you stick with the default prefix of `~~`, but this command is provided in case you find conflicts with other bots.
 
