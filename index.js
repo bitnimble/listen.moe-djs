@@ -173,6 +173,8 @@ function commandJoin(msg, argument) {
     if (!guild || !channel)
         msg.channel.sendMessage("Join a voice channel first!");
     else {
+        channel = channel.toString();
+        guild = guild.toString();
         writeGuildConfig(guild, { vc: channel });
         joinVoice(guild, channel);
         msg.channel.sendMessage("\\o/");
@@ -182,7 +184,7 @@ function commandJoin(msg, argument) {
 function commandLeave(msg, argument) {
     if (!canManageGuild(msg.member))
         return;
-    let guild = msg.guild.id;
+    let guild = msg.guild.id.toString();
     let vc = client.voiceConnections.get(guild);
     if (!vc)
         msg.channel.sendMessage("Bot is not in a channel!");
