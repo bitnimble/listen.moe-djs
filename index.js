@@ -236,6 +236,20 @@ function commandStats(msg, argument) {
     });
 }
 
+function commandPrefix (msg, argument) {
+    if (!canManageGuild(msg.author)) return
+
+    if (/[a-zA-Z0-9\s\n]/.test(argument)) {
+        msg.channel.sendMesssage("Invalid prefix. Can't be a letter, number, or whitespace character.")
+        return
+    }
+
+    writeGuildConfig(msg.guild.id, {prefix: newPrefix})
+    c.registerGuildPrefix(msg.guild.id, newPrefix)
+    msg.channel.sendMesasge("\\o/")
+
+}
+
 commandHelper.register("eval", commandEval);
 commandHelper.register("np", commandNowPlaying);
 commandHelper.register("help", commandHelp);
@@ -245,7 +259,11 @@ commandHelper.register("leave", commandLeave);
 
 //Now for the main stuff...
 //client.on('debug', console.log);
-client.on("message", msg => { commandHelper.process(msg); });
+client.on("message", msg => {
+    const guildConfig = guilds[msg.guild.id] || {}
+    let prefix = guildConfig.prefix
+    commandHelper.process(msg);
+});
 client.on("guildCreate", guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
 function currentListeners() {

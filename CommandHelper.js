@@ -1,22 +1,23 @@
-﻿const EventEmitter = require("events").EventEmitter;
+const EventEmitter = require("events").EventEmitter;
 
 class CommandHelper extends EventEmitter {
     constructor(prefix) {
         super();
-        this.prefix = prefix || "~~";
+        this.defaultPrefix = prefix || "~~";
         this.commands = new Map();
     }
-    
+
     register(command, fn) {
         this.commands.set(command, fn);
     }
 
-    process(msg) {
+    process(msg, prefix) {
+        prefix = prefix || this.defaultPrefix
         let msgString = msg.content;
-        if (!msgString.startsWith(this.prefix))
+        if (!msgString.startsWith(prefix))
             return;
         //Remove prefix
-        msgString = msgString.substr(this.prefix.length);
+        msgString = msgString.substr(prefix.length);
 
         //Separate command and arguments (if it has arguments)
         let command = msgString;
