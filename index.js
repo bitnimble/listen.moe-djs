@@ -3,11 +3,11 @@ let config = require('./config.json');
 let guilds = require('./guilds.json');
 let fs = require('fs');
 let merge = require('merge');
-let io = require('socket.io-client');
 let request = require('request');
 let reload = require('require-reload')(require);
 let HTTPS = require("https");
 let CommandHelper = require('./CommandHelper');
+let Websocket = require('ws');
 
 const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
@@ -29,16 +29,17 @@ let listeners = 0;
 //Setup input stream
 let stream;
 HTTPS.get(config.stream, (res) => stream = res).once("error", (e) => {
-	console.log("HTTPS stream died :O");
-	process.exit(1);
+    console.log("HTTPS stream died :O");
+    process.exit(1);
 });
 
 //Setup stream info socket
-let radioJSON = {};
-let socket = io.connect(config.streamInfo);
-socket.on('update', (obj) => {
+let radioJSON;
+let ws = new WebSocket(config.streamInfo);
+ws.on('message', (data) => {
     try {
-        radioJSON = obj;
+        if (data === '') return;
+        radioJSON = JSON.parse(data);
     } catch (e) {
         console.log(e)
     }
@@ -69,7 +70,7 @@ function joinVoices(connectList, i) {
     let channel = connectList[i].channel;
     let cc = client.voiceConnections.get(guild); // Find a current connection in this guild
     let isNewConnection = !cc;
-    
+
     let guildObj = client.guilds.get(guild);
     if (guildObj) {
         let voiceChannel = guildObj.channels.get(channel);
