@@ -4,7 +4,6 @@
 	"node-opus": "^0.2.4",
     "merge": "^1.2.0",
     "request": "^2.74.0",
-    "require-reload": "^0.2.2",
-    "socket.io-client": "^1.5.1"
+    "require-reload": "^0.2.2"
   }
 }
