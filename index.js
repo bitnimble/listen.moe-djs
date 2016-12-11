@@ -236,17 +236,16 @@ function commandStats(msg, argument) {
     });
 }
 
-function commandPrefix (msg, argument) {
-    if (!canManageGuild(msg.author)) return
+function commandPrefix(msg, argument) {
+    if (!canManageGuild(msg.member)) return
 
     if (/[a-zA-Z0-9\s\n]/.test(argument)) {
-        msg.channel.sendMesssage("Invalid prefix. Can't be a letter, number, or whitespace character.")
+        msg.channel.sendMessage("Invalid prefix. Can't be a letter, number, or whitespace character.")
         return
     }
 
-    writeGuildConfig(msg.guild.id, {prefix: newPrefix})
-    c.registerGuildPrefix(msg.guild.id, newPrefix)
-    msg.channel.sendMesasge("\\o/")
+    writeGuildConfig(msg.guild.id, {prefix: argument})
+    msg.channel.sendMessage("\\o/")
 
 }
 
@@ -256,13 +255,14 @@ commandHelper.register("help", commandHelp);
 commandHelper.register("join", commandJoin);
 commandHelper.register("stats", commandStats);
 commandHelper.register("leave", commandLeave);
+commandHelper.register("prefix", commandPrefix);
 
 //Now for the main stuff...
 //client.on('debug', console.log);
 client.on("message", msg => {
     const guildConfig = guilds[msg.guild.id] || {}
     let prefix = guildConfig.prefix
-    commandHelper.process(msg);
+    commandHelper.process(msg, prefix);
 });
 client.on("guildCreate", guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
