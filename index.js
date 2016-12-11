@@ -7,7 +7,7 @@ let request = require('request');
 let reload = require('require-reload')(require);
 let HTTPS = require("https");
 let CommandHelper = require('./CommandHelper');
-let Websocket = require('ws');
+let WebSocket = require('ws');
 
 const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
