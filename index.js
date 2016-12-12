@@ -135,9 +135,10 @@ function joinVoices(connectList, i) {
     if (guildObj) {
         let voiceChannel = guildObj.channels.get(channel);
         if (!voiceChannel) {
-            return joinVoices(connectList, i + 1);
+            joinVoices(connectList, i + 1);
+            return;
         }
-        return voiceChannel.join({ shared: true }).then(vc => {
+        voiceChannel.join({ shared: true }).then(vc => {
             if (vc) {
                 let realGuild = client.guilds.get(guild);
                 if (isNewConnection) {
@@ -149,7 +150,7 @@ function joinVoices(connectList, i) {
                     console.log(`Moved voice connection for guild ${realGuild.name} (${realGuild.id}) to a different channel`);
                 }
             }
-            return joinVoices(connectList, i + 1);
+            joinVoices(connectList, i + 1);
         }).catch(error => {
             if (isNewConnection) {
                 console.log(`Error connecting to channel ${channel} | ${error}`);
@@ -157,10 +158,10 @@ function joinVoices(connectList, i) {
                 console.log(`Error moving to channel ${channel} | ${error}`);
             }
 
-            return joinVoices(connectList, i + 1);
+            joinVoices(connectList, i + 1);
         });
     } else {
-        return joinVoices(connectList, i + 1);
+        joinVoices(connectList, i + 1);
     }
 }
 
