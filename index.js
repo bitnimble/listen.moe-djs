@@ -38,7 +38,7 @@ HTTPS.get(config.stream, (res) => stream = res).once("error", (e) => {
 let radioJSON;
 let ws;
 function connectWS(info) {
-    if (ws !== null) ws.removeAllListeners();
+    if (!ws) ws.removeAllListeners();
     ws = new WebSocket(info);
 
     ws.on('message', data => {
