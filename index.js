@@ -230,9 +230,8 @@ function commandStats(msg) {
     if (!config.owners.includes(msg.author.id)) return msg.channel.sendMessage('soz bae must be bot owner');
 
     let users = 0;
-    client.voiceConnections.map(vc => vc.channel)
-        .forEach(c => users += c.members // eslint-disable-line no-return-assign
-            .filter(m => !m.selfDeaf && !m.deaf).size - 1);
+    client.voiceConnections.map(vc => users += vc.channel.members // eslint-disable-line no-return-assign
+        .filter(m => !m.user.bot && !m.selfDeaf && !m.deaf).size);
 
     let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
     let requestedBy = radioJSON.requested_by ? `\n**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
