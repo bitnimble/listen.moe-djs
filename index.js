@@ -11,6 +11,11 @@ const CommandHelper = require('./CommandHelper');
 const config = require('./config.json');
 let guilds = require('./guilds.json');
 
+const client = new Discord.Client();
+const commandHelper = new CommandHelper(config.guildDefaults.prefix);
+
+let listeners = 0;
+
 const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
 
@@ -24,16 +29,11 @@ const HELP_MESSAGE = `
 
 For additional commands and help, please visit: <https://github.com/anonymousthing/listen.moe-djs>`;
 
-const client = new Discord.Client();
-const commandHelper = new CommandHelper(config.guildDefaults.prefix);
-
-let listeners = 0;
-
 /*
  * Setup input stream from the radio.
  */
 let stream;
-HTTPS.get(config.stream, (res) => stream = res).once('error', (error) => { // eslint-disable-line no-return-assign
+HTTPS.get(config.stream, res => stream = res).once('error', error => { // eslint-disable-line no-return-assign
     console.log(`HTTPS stream died :O\n${error}`);
     process.exit(1);
 });
@@ -69,20 +69,24 @@ function writeGuildConfig(guild, object) {
      * Get gurrent config for this guild, creating it if it doesn't exist.
      */
     let currentConfig = guilds[guild] || {};
+
     /*
      * Merge new options with current.
      */
     let newConfig = merge(currentConfig, object);
     let _guilds = guilds;
+
     /*
      * Write this new config back to the config.
      */
     _guilds[guild] = newConfig;
     if (!fs.existsSync('./backups')) fs.mkdirSync('./backups');
+
     /*
      * Create a backup before doing anything.
      */
     fs.writeFile(`backups/guilds-${Date.now()}.json`, JSON.stringify(guilds, null, '\t'));
+
     /*
      * Store the new stuff in the file.
      */
@@ -107,6 +111,7 @@ function getGuildConfig(guild, option) {
      */
     let defaults = config.guildDefaults;
     if (!guilds[guild] || !guilds[guild][option]) return defaults[option];
+
     return guilds[guild][option];
 }
 
@@ -119,6 +124,7 @@ function joinVoices(connectList, i) {
 
     let guild = connectList[i].guild;
     let channel = connectList[i].channel;
+
     /*
      * Find a current connection in this guild.
      */
@@ -133,13 +139,12 @@ function joinVoices(connectList, i) {
         }
         return voiceChannel.join({ shared: true }).then(vc => {
             if (vc) {
-                if (isNewConnection) {
-                    vc.setSpeaking(true);
-                    vc.playSharedStream('listen.moe', stream);
-                }
                 let realGuild = client.guilds.get(guild);
                 if (isNewConnection) {
                     console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`);
+                    vc.setSpeaking(true);
+
+                    return vc.playSharedStream('listen.moe', stream);
                 } else {
                     console.log(`Moved voice connection for guild ${realGuild.name} (${realGuild.id}) to a different channel`);
                 }
@@ -151,6 +156,7 @@ function joinVoices(connectList, i) {
             } else {
                 console.log(`Error moving to channel ${channel} | ${error}`);
             }
+
             return joinVoices(connectList, i + 1);
         });
     } else {
@@ -175,6 +181,7 @@ function canManageGuild(member) {
  */
 function commandEval(msg, argument) {
     if (!config.owners.includes(msg.author.id)) return msg.channel.sendMessage('soz bae must be bot owner');
+
     let result;
     try {
         console.log(argument);
@@ -198,9 +205,9 @@ function commandNowPlaying(msg) {
 
     let requestedBy = radioJSON.requested_by ? `\n**Requested by:** ${radioJSON.requested_by}` : '';
     let anime = radioJSON.anime_name ? `\n**Anime:** ${radioJSON.anime_name}` : '';
+
     return msg.channel.sendMessage(`**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${anime}${requestedBy}`);
 }
-
 
 /*
  * Shows a real basic usage help.
@@ -215,6 +222,7 @@ function commandHelp(msg) {
  */
 function commandJoin(msg) {
     if (!canManageGuild(msg.member)) return;
+
     let channel = msg.member.voiceChannelID;
     let guild = msg.guild.id;
     if (!guild || !channel) {
@@ -224,6 +232,7 @@ function commandJoin(msg) {
         guild = guild.toString();
         writeGuildConfig(guild, { vc: channel });
         joinVoice(guild, channel);
+
         return msg.channel.sendMessage('\\o/');
     }
 }
@@ -234,6 +243,7 @@ function commandJoin(msg) {
  */
 function commandLeave(msg) {
     if (!canManageGuild(msg.member)) return;
+
     let guild = msg.guild.id.toString();
     let vc = client.voiceConnections.get(guild);
     if (!vc) {
@@ -242,6 +252,7 @@ function commandLeave(msg) {
         vc.leaveSharedStream();
         vc.disconnect();
         writeGuildConfig(guild, { vc: null });
+
         return msg.channel.sendMessage(';_; o-okay...');
     }
 }
@@ -292,11 +303,11 @@ function commandPrefix(msg, argument) {
     if (!canManageGuild(msg.member)) return;
 
     if (/[a-zA-Z0-9\s\n]/.test(argument)) {
-        msg.channel.sendMessage('Invalid prefix. Can\'t be a letter, number, or whitespace character.');
-        return;
+        return msg.channel.sendMessage('Invalid prefix. Can\'t be a letter, number, or whitespace character.');
     }
 
     writeGuildConfig(msg.guild.id, { prefix: argument });
+
     return msg.channel.sendMessage('\\o/');
 }
 
@@ -314,7 +325,8 @@ function currentListeners() {
             .filter(m => !m.selfDeaf && !m.deaf).size - 1);
 
     listeners = userCount;
-    setTimeout(currentListeners, 20000);
+
+    return setTimeout(currentListeners, 20000);
 }
 
 /*
@@ -325,7 +337,8 @@ function gameCurrentSong() {
     if (radioJSON !== {}) game = `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`;
 
     client.user.setGame(game);
-    setTimeout(gameCurrentUsersAndGuilds, 20000);
+
+    return setTimeout(gameCurrentUsersAndGuilds, 20000);
 }
 
 /*
@@ -333,7 +346,8 @@ function gameCurrentSong() {
  */
 function gameCurrentUsersAndGuilds() {
     client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
-    setTimeout(gameCurrentSong, 10000);
+
+    return setTimeout(gameCurrentSong, 10000);
 }
 
 function sendListenersData() { // eslint-disable-line no-unused-vars
@@ -341,7 +355,7 @@ function sendListenersData() { // eslint-disable-line no-unused-vars
         if (err) console.log(`Etooo, crap. Couldnt update listeners. Reason: ${err}`);
     });
 
-    setTimeout(sendListenersData, 60000);
+    return setTimeout(sendListenersData, 60000);
 }
 
 commandHelper.register('eval', commandEval);
@@ -360,6 +374,7 @@ client.once('ready', () => {
      * Rejoin channels that we were connected to.
      */
     let connectList = [];
+
     /*
      * Loop through all the servers recorded.
      */
@@ -368,7 +383,7 @@ client.once('ready', () => {
          * Get the channel for this guild.
          */
         let channel = getGuildConfig(guild, 'vc');
-        if (channel) connectList.push({ guild: guild, channel: channel });
+        if (channel) return connectList.push({ guild: guild, channel: channel });
     }
     joinVoices(connectList, 0);
 
@@ -385,10 +400,13 @@ client.on('guildCreate', guild => { guild.defaultChannel.sendMessage(HELP_MESSAG
 
 client.on('message', msg => {
     if (msg.channel.type === 'dm') return;
+
     const permission = msg.channel.permissionsFor(msg.client.user);
     if (!permission.hasPermission('SEND_MESSAGES')) return msg.author.sendMessage('I don\'t have permissions to send messages in that channel.');
+
     const guildConfig = guilds[msg.guild.id] || {};
     let prefix = guildConfig.prefix;
+
     return commandHelper.process(msg, prefix);
 });
 

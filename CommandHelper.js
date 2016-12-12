@@ -33,7 +33,8 @@ class CommandHelper extends EventEmitter {
         if (!(fn = this.commands.get(command))) return;
 
         let argument = msgString.substr(msgString.indexOf(' ') + 1);
-        fn(msg, argument);
+
+        return fn(msg, argument);
     }
 }
 
