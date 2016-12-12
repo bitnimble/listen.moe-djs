@@ -1,13 +1,14 @@
-let Discord = require('discord.js');
-let config = require('./config.json');
-let guilds = require('./guilds.json');
-let fs = require('fs');
-let merge = require('merge');
-let request = require('request');
-let reload = require('require-reload')(require);
-let HTTPS = require("https");
-let CommandHelper = require('./CommandHelper');
-let WebSocket = require('ws');
+const Discord = require('discord.js');
+const fs = require('fs');
+const HTTPS = require("https");
+const merge = require('merge');
+const request = require('request');
+const reload = require('require-reload')(require);
+const WebSocket = require('ws');
+
+const CommandHelper = require('./CommandHelper');
+const config = require('./config.json');
+const guilds = require('./guilds.json');
 
 const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
@@ -21,8 +22,8 @@ const HELP_MESSAGE = `
 
 For additional commands and help, please visit: <https://github.com/Geo1088/listen.moe-streaming-bot>`;
 
-let client = new Discord.Client();
-let commandHelper = new CommandHelper(config.guildDefaults.prefix);
+const client = new Discord.Client();
+const commandHelper = new CommandHelper(config.guildDefaults.prefix);
 
 let listeners = 0;
 
@@ -35,15 +36,24 @@ HTTPS.get(config.stream, (res) => stream = res).once("error", (e) => {
 
 //Setup stream info socket
 let radioJSON;
-let ws = new WebSocket(config.streamInfo);
-ws.on('message', (data) => {
-    try {
-        if (data === '') return;
-        radioJSON = JSON.parse(data);
-    } catch (e) {
-        console.log(e)
-    }
-});
+let ws;
+function connectWS(info) {
+    if (ws !== null) ws.removeAllListeners();
+    ws = new WebSocket(info);
+
+    ws.on('message', data => {
+        try {
+            if (data) radioJSON = JSON.parse(data);
+        } catch (e) {
+            console.log(e);
+        }
+    });
+    ws.on('close', () => {
+        setTimeout(connectWS, 3000);
+        console.log('Websocket connection closed, reconnecting...');
+    });
+    ws.on('error', console.error);
+}
 
 function writeGuildConfig(guild, object) { // Change a guild's config via an object of options, and save the changes
     var currentConfig = guilds[guild] || {}; // Get gurrent config for this guild, creating it if it doesn't exist
@@ -237,15 +247,15 @@ function commandStats(msg, argument) {
 }
 
 function commandPrefix(msg, argument) {
-    if (!canManageGuild(msg.member)) return
+    if (!canManageGuild(msg.member)) return;
 
     if (/[a-zA-Z0-9\s\n]/.test(argument)) {
         msg.channel.sendMessage("Invalid prefix. Can't be a letter, number, or whitespace character.")
-        return
+        return;
     }
 
-    writeGuildConfig(msg.guild.id, {prefix: argument})
-    msg.channel.sendMessage("\\o/")
+    writeGuildConfig(msg.guild.id, {prefix: argument});
+    msg.channel.sendMessage("\\o/");
 
 }
 
@@ -260,10 +270,11 @@ commandHelper.register("prefix", commandPrefix);
 //Now for the main stuff...
 //client.on('debug', console.log);
 client.on("message", msg => {
-    const guildConfig = guilds[msg.guild.id] || {}
-    let prefix = guildConfig.prefix
+    const guildConfig = guilds[msg.guild.id] || {};
+    let prefix = guildConfig.prefix;
     commandHelper.process(msg, prefix);
 });
+
 client.on("guildCreate", guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
 function currentListeners() {
@@ -277,7 +288,7 @@ function currentListeners() {
     setTimeout(currentListeners, 20000);
 }
 
-function gameCurrentSong () {
+function gameCurrentSong() {
     let game = 'music probably';
     if(radioJSON !== {})
         game = `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`;
@@ -287,7 +298,7 @@ function gameCurrentSong () {
 }
 
 // Changes the bot's game to a listener and guild count
-function gameCurrentUsersAndGuilds () {
+function gameCurrentUsersAndGuilds() {
     client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
     setTimeout(gameCurrentSong, 10000);
 }
@@ -302,7 +313,8 @@ function sendListenersData() {
 }
 
 client.once('ready', () => {
-    console.log(`Connected as ${client.user.username} / Currently in ${client.guilds.size} servers`)
+    console.log(`Connected as ${client.user.username} / Currently in ${client.guilds.size} servers`);
+    connectWS(config.streamInfo);
 
     // Rejoin channels that we were connected to
     let connectList = [];
@@ -315,7 +327,7 @@ client.once('ready', () => {
 
     //Initialise timer loops
     currentListeners();
-    gameCurrentSong();
+    gameCurrentUsersAndGuilds();
 
     //if (config.listenersReportURL)
     //    sendListenersData();
