@@ -135,17 +135,16 @@ function joinVoices(connectList, i) {
     if (guildObj) {
         let voiceChannel = guildObj.channels.get(channel);
         if (!voiceChannel) {
-            joinVoices(connectList, i + 1);
-            return;
+            return joinVoices(connectList, i + 1);
         }
-        voiceChannel.join({ shared: true }).then(vc => {
+        return voiceChannel.join({ shared: true }).then(vc => {
             if (vc) {
                 let realGuild = client.guilds.get(guild);
                 if (isNewConnection) {
                     console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`);
                     vc.setSpeaking(true);
 
-                    return vc.playSharedStream('listen.moe', stream);
+                    vc.playSharedStream('listen.moe', stream);
                 } else {
                     console.log(`Moved voice connection for guild ${realGuild.name} (${realGuild.id}) to a different channel`);
                 }
@@ -158,10 +157,10 @@ function joinVoices(connectList, i) {
                 console.log(`Error moving to channel ${channel} | ${error}`);
             }
 
-            joinVoices(connectList, i + 1);
+            return joinVoices(connectList, i + 1);
         });
     } else {
-        joinVoices(connectList, i + 1);
+        return joinVoices(connectList, i + 1);
     }
 }
 
@@ -384,7 +383,7 @@ client.once('ready', () => {
          * Get the channel for this guild.
          */
         let channel = getGuildConfig(guild, 'vc');
-        if (channel) return connectList.push({ guild: guild, channel: channel });
+        if (channel) connectList.push({ guild: guild, channel: channel });
     }
     joinVoices(connectList, 0);
 
