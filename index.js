@@ -351,9 +351,12 @@ client.once('ready', () => {
 client.on('guildCreate', guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
 client.on('message', msg => {
+    if (msg.channel.type === 'dm') return;
+    const permission = msg.channel.permissionsFor(msg.client.user);
+    if (!permission.hasPermission('SEND_MESSAGES')) return msg.author.sendMessage('I don\'t have permissions to send messages in that channel.');
     const guildConfig = guilds[msg.guild.id] || {};
     let prefix = guildConfig.prefix;
-    commandHelper.process(msg, prefix);
+    return commandHelper.process(msg, prefix);
 });
 
 client.login(config.token);
