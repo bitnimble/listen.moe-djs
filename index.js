@@ -402,7 +402,7 @@ client.on('message', msg => {
     if (msg.channel.type === 'dm') return;
 
     const permission = msg.channel.permissionsFor(msg.client.user);
-    if (!permission.hasPermission('SEND_MESSAGES')) return msg.author.sendMessage('I don\'t have permissions to send messages in that channel.');
+    if (!permission.hasPermission('SEND_MESSAGES')) return;
 
     const guildConfig = guilds[msg.guild.id] || {};
     let prefix = guildConfig.prefix;
