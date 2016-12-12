@@ -265,7 +265,7 @@ function commandPrefix(msg, argument) {
   if (!canManageGuild(msg.member)) return;
 
   if (/[a-zA-Z0-9\s\n]/.test(argument)) {
-    msg.channel.sendMessage("Invalid prefix. Can't be a letter, number, or whitespace character.");
+    msg.channel.sendMessage('Invalid prefix. Can\'t be a letter, number, or whitespace character.');
     return;
   }
 
