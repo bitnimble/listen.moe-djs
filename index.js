@@ -15,13 +15,14 @@ const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
 
 **Usage:**
-    After adding me to your server, join a voice channel and type \`~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
+    After adding me to your server, join a voice channel and type \`~~join\` to bind me to that voice channel.
+    Keep in mind that you need to have the \`Manage Server\` permission to use this command.
 
 **Commands:**
-    **\\~~join**: Joins current Voice Channel
-    **\\~~np**: Displays the Currently Playing song
+    **\\~~join**: Joins the voice channel you are currently in.
+    **\\~~np**: Displays the currently playing song.
 
-For additional commands and help, please visit: <https://github.com/Geo1088/listen.moe-streaming-bot>`;
+For additional commands and help, please visit: <https://github.com/anonymousthing/listen.moe-djs>`;
 
 const client = new Discord.Client();
 const commandHelper = new CommandHelper(config.guildDefaults.prefix);
