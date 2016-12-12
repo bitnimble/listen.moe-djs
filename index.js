@@ -8,7 +8,7 @@ const WebSocket = require('ws');
 
 const CommandHelper = require('./CommandHelper');
 const config = require('./config.json');
-const guilds = require('./guilds.json');
+let guilds = require('./guilds.json');
 
 const HELP_MESSAGE = `
 **LISTEN.moe streaming bot by Geo1088 & friends**
