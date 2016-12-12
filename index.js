@@ -29,7 +29,7 @@ const commandHelper = new CommandHelper(config.guildDefaults.prefix);
 let listeners = 0;
 
 /*
- * Setup input stream.
+ * Setup input stream from the radio.
  */
 let stream;
 HTTPS.get(config.stream, (res) => stream = res).once('error', (error) => { // eslint-disable-line no-return-assign
@@ -38,7 +38,7 @@ HTTPS.get(config.stream, (res) => stream = res).once('error', (error) => { // es
 });
 
 /*
- * Setup stream info socket.
+ * Setup stream info socket from the radio.
  */
 let radioJSON;
 let ws;
@@ -67,12 +67,12 @@ function writeGuildConfig(guild, object) {
     /*
      * Get gurrent config for this guild, creating it if it doesn't exist.
      */
-    var currentConfig = guilds[guild] || {};
+    let currentConfig = guilds[guild] || {};
     /*
      * Merge new options with current.
      */
-    var newConfig = merge(currentConfig, object);
-    var _guilds = guilds;
+    let newConfig = merge(currentConfig, object);
+    let _guilds = guilds;
     /*
      * Write this new config back to the config.
      */
@@ -128,10 +128,9 @@ function joinVoices(connectList, i) {
     if (guildObj) {
         let voiceChannel = guildObj.channels.get(channel);
         if (!voiceChannel) {
-            joinVoices(connectList, i + 1);
-            return;
+            return joinVoices(connectList, i + 1);
         }
-        voiceChannel.join({ shared: true }).then(vc => {
+        return voiceChannel.join({ shared: true }).then(vc => {
             if (vc) {
                 if (isNewConnection) {
                     vc.setSpeaking(true);
@@ -144,33 +143,36 @@ function joinVoices(connectList, i) {
                     console.log(`Moved voice connection for guild ${realGuild.name} (${realGuild.id}) to a different channel`);
                 }
             }
-            joinVoices(connectList, i + 1);
+            return joinVoices(connectList, i + 1);
         }).catch(error => {
             if (isNewConnection) {
                 console.log(`Error connecting to channel ${channel} | ${error}`);
             } else {
                 console.log(`Error moving to channel ${channel} | ${error}`);
             }
-            joinVoices(connectList, i + 1);
+            return joinVoices(connectList, i + 1);
         });
     } else {
-        joinVoices(connectList, i + 1);
+        return joinVoices(connectList, i + 1);
     }
 }
 
 function joinVoice(guild, channel) {
-    joinVoices([{ guild: guild, channel: channel }], 0);
+    return joinVoices([{ guild: guild, channel: channel }], 0);
 }
 
+/*
+ * Helper function to check manage server permission.
+ */
 function canManageGuild(member) {
     return member.permissions.hasPermission('MANAGE_GUILD');
 }
 
+/*
+ * Allows the owner to dynamically run scripts against the bot from inside Discord.
+ * Requires explicit owner permission inside the config file.
+ */
 function commandEval(msg, argument) {
-    /*
-     * Eval command - Allows the owner to dynamically run scripts against the bot from inside Discord.
-     * Requires explicit owner permission inside the config file.
-     */
     if (!config.owners.includes(msg.author.id)) return msg.channel.sendMessage('soz bae must be bot owner');
     let result;
     try {
@@ -183,6 +185,11 @@ function commandEval(msg, argument) {
     return msg.channel.sendMessage(result, { split: true });
 }
 
+/*
+ * Gets the currently playing song and artist.
+ * If the song was requested by someone also gives their name
+ * and a link to their profile on forum.listen.moe.
+ */
 function commandNowPlaying(msg) {
     if (getGuildConfig(msg.guild.id, 'denied').includes(msg.channel.id)) return;
 
@@ -190,42 +197,58 @@ function commandNowPlaying(msg) {
 
     let requestedBy = radioJSON.requested_by ? `\n**Requested by:** ${radioJSON.requested_by}` : '';
     let anime = radioJSON.anime_name ? `\n**Anime:** ${radioJSON.anime_name}` : '';
-    msg.channel.sendMessage(`**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${anime}${requestedBy}`);
+    return msg.channel.sendMessage(`**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${anime}${requestedBy}`);
 }
 
+
+/*
+ * Shows a real basic usage help.
+ */
 function commandHelp(msg) {
-    msg.channel.sendMessage(HELP_MESSAGE);
+    return msg.channel.sendMessage(HELP_MESSAGE);
 }
 
+/*
+ * Type this while in a voice channel to have the bot join that channel and start playing.
+ * Limited to users with the "manage server" permission.
+ */
 function commandJoin(msg) {
     if (!canManageGuild(msg.member)) return;
     let channel = msg.member.voiceChannelID;
     let guild = msg.guild.id;
     if (!guild || !channel) {
-        msg.channel.sendMessage('Join a voice channel first!');
+        return msg.channel.sendMessage('Join a voice channel first!');
     } else {
         channel = channel.toString();
         guild = guild.toString();
         writeGuildConfig(guild, { vc: channel });
         joinVoice(guild, channel);
-        msg.channel.sendMessage('\\o/');
+        return msg.channel.sendMessage('\\o/');
     }
 }
 
+/*
+ * Type this while in a voice channel to have the bot leave that channel and stop playing.
+ * Limited to users with the "manage server" permission.
+ */
 function commandLeave(msg) {
     if (!canManageGuild(msg.member)) return;
     let guild = msg.guild.id.toString();
     let vc = client.voiceConnections.get(guild);
     if (!vc) {
-        msg.channel.sendMessage('Bot is not in a channel!');
+        return msg.channel.sendMessage('Bot is not in a channel!');
     } else {
         vc.leaveSharedStream();
         vc.disconnect();
         writeGuildConfig(guild, { vc: null });
-        msg.channel.sendMessage(';_; o-okay...');
+        return msg.channel.sendMessage(';_; o-okay...');
     }
 }
 
+/*
+ * Allows the owner to show stats from the bot from inside Discord.
+ * Requires explicit owner permission inside the config file.
+ */
 function commandStats(msg) {
     if (!config.owners.includes(msg.author.id)) return msg.channel.sendMessage('soz bae must be bot owner');
 
@@ -260,6 +283,10 @@ function commandStats(msg) {
     });
 }
 
+/*
+ * Type this to have the bot change prefix.
+ * Limited to users with the "manage server" permission.
+ */
 function commandPrefix(msg, argument) {
     if (!canManageGuild(msg.member)) return;
 
@@ -269,9 +296,12 @@ function commandPrefix(msg, argument) {
     }
 
     writeGuildConfig(msg.guild.id, { prefix: argument });
-    msg.channel.sendMessage('\\o/');
+    return msg.channel.sendMessage('\\o/');
 }
 
+/*
+ * Helper function to get current listeners.
+ */
 function currentListeners() {
     let userCount = 0;
     /*
@@ -287,7 +317,7 @@ function currentListeners() {
 }
 
 /*
- * Changes the bot's game to a listener and guild count.
+ * Changes the bot's game to the currently playing song.
  */
 function gameCurrentSong() {
     let game = 'music probably';
@@ -297,6 +327,9 @@ function gameCurrentSong() {
     setTimeout(gameCurrentUsersAndGuilds, 20000);
 }
 
+/*
+ * Changes the bot's game to a listener and guild count.
+ */
 function gameCurrentUsersAndGuilds() {
     client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
     setTimeout(gameCurrentSong, 10000);
