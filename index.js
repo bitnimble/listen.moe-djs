@@ -316,13 +316,8 @@ function commandPrefix(msg, argument) {
  */
 function currentListeners() {
     let userCount = 0;
-    /*
-     * Iterate through all our voice connections' channels and count the number of other users.
-     */
-    client.voiceConnections
-        .map(vc => vc.channel)
-        .forEach(c => userCount += c.members // eslint-disable-line no-return-assign
-            .filter(m => !m.selfDeaf && !m.deaf).size - 1);
+    client.voiceConnections.map(vc => userCount += vc.channel.members // eslint-disable-line no-return-assign
+        .filter(m => !m.user.bot && !m.selfDeaf && !m.deaf).size);
 
     listeners = userCount;
 
