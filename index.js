@@ -48,7 +48,9 @@ function connectWS(info) {
     try {
         ws = new WebSocket(info);
     } catch (e) {
-        setTimeout(connectWS, 3000);
+        setTimeout(() => {
+            connectWS(info);
+        }, 3000);
         console.log('Websocket couldn\'t connect, reconnecting...');
     }
 
@@ -60,7 +62,9 @@ function connectWS(info) {
         }
     });
     ws.on('close', () => {
-        setTimeout(connectWS, 3000);
+        setTimeout(() => {
+            connectWS(info);
+        }, 3000);
         console.log('Websocket connection closed, reconnecting...');
     });
     ws.on('error', console.error);
