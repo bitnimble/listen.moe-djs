@@ -45,7 +45,12 @@ let radioJSON;
 let ws;
 function connectWS(info) {
     if (ws) ws.removeAllListeners();
-    ws = new WebSocket(info);
+    try {
+        ws = new WebSocket(info);
+    } catch (e) {
+        setTimeout(connectWS, 3000);
+        console.log('Websocket couldn\'t connect, reconnecting...');
+    }
 
     ws.on('message', data => {
         try {
