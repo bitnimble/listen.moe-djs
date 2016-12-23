@@ -1,3 +1,4 @@
+![LISTEN.moe](https://i.imgur.com/t8Zg2YJ.jpg)
 # Official listen.moe discord bot
 
 The official discord bot that streams from [listen.moe](https://listen.moe) to your discord server. [Add it to your server here!](https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot)
@@ -32,9 +33,11 @@ This list assumes a prefix of `~~`.
 
 ## Run it yourself
 
+NodeJS version 6+ is required. 
+
 - Clone the repo.
 - Create a Discord OAuth application and bot account.
 - Rename/duplicate `config-sample.json` to `config.json` and fill out the relevant information.
 - Install dependencies from npm.
-- Install FFMPEG - if on Windows, make sure to add it to your PATH.
+- Install ffmpeg - if on Windows, make sure to add it to your PATH.
 - Run the bot with `node index.js`
