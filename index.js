@@ -411,8 +411,6 @@ client.once('ready', () => {
 
 client.on('guildCreate', guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
-client.on('guildCreate', guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
-
 client.on('message', msg => {
     if (msg.channel.type === 'dm') return;
 
