@@ -370,6 +370,15 @@ commandHelper.register('stats', commandStats);
 commandHelper.register('leave', commandLeave);
 commandHelper.register('prefix', commandPrefix);
 
+client.on('error', console.error);
+
+client.on('warn', console.warn);
+
+client.on('disconnect', () => {
+    console.warn('Disconnected!');
+    process.exit(1);
+});
+
 client.once('ready', () => {
     console.log(`Connected as ${client.user.username} / Currently in ${client.guilds.size} servers`);
     connectWS(config.streamInfo);
@@ -399,6 +408,8 @@ client.once('ready', () => {
 
     // if (config.listenersReportURL) sendListenersData();
 });
+
+client.on('guildCreate', guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
 client.on('guildCreate', guild => { guild.defaultChannel.sendMessage(HELP_MESSAGE); });
 
