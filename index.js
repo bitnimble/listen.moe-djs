@@ -288,7 +288,7 @@ function commandStats(msg) {
     return msg.channel.sendMessage('', {
         embed: {
             title: 'LISTEN.moe (Click here to add the radio bot to your server)',
-            url: 'https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot',
+            url: 'https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot&permissions=36702208',
             description: description,
             color: 15473237,
             fields: [
@@ -379,7 +379,7 @@ client.on('error', console.error);
 client.on('warn', console.warn);
 
 client.on('disconnect', () => {
-    console.warn('Disconnected!');
+    console.log('Disconnected!');
     process.exit(1);
 });
 
