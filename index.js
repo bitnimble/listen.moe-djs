@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const HTTPS = require('https');
 const merge = require('merge');
+const Raven = require('raven');
 const request = require('request');
 const reload = require('require-reload')(require);
 const WebSocket = require('ws');
@@ -13,6 +14,9 @@ let guilds = require('./guilds.json');
 
 const client = new Discord.Client();
 const commandHelper = new CommandHelper(config.guildDefaults.prefix);
+
+Raven.config(config.ravenKey);
+Raven.install();
 
 let listeners = 0;
 

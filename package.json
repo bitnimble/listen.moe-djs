@@ -36,8 +36,9 @@
   "homepage": "https://github.com/anonymousthing/listen.moe-djs#readme",
   "dependencies": {
     "discord.js": "github:kanadeko/discord.js#indev",
-    "node-opus": "^0.2.4",
     "merge": "^1.2.0",
+    "node-opus": "^0.2.4",
+    "raven": "^1.1.1",
     "request": "^2.74.0",
     "require-reload": "^0.2.2",
     "ws": "^1.1.1"
