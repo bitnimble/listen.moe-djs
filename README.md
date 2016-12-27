@@ -16,6 +16,9 @@ This list assumes a prefix of `~~`.
 - `~~join`
   Type this while in a voice channel to have the bot join that channel and start playing there. Limited to users with the "manage server" permission.
 
+- `~~leave`
+  Makes the bot leave the voice channel it's currently in.
+
 - `~~np`
   Gets the currently playing song and artist. If the song was requested by someone, also gives their name and a link to their profile on forum.listen.moe.
 
