@@ -29,6 +29,7 @@ const HELP_MESSAGE = `
 
 **Commands:**
     **\\~~join**: Joins the voice channel you are currently in.
+    **\\~~leave**: Leaves the voice channel the bot is currently in.
     **\\~~np**: Displays the currently playing song.
 
 For additional commands and help, please visit: <https://github.com/anonymousthing/listen.moe-djs>`;

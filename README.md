@@ -1,7 +1,7 @@
 ![LISTEN.moe](https://i.imgur.com/t8Zg2YJ.jpg)
 # Official listen.moe discord bot
 
-The official discord bot that streams from [listen.moe](https://listen.moe) to your discord server. [Add it to your server here!](https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot)
+The official discord bot that streams from [listen.moe](https://listen.moe) to your discord server. [Add it to your server here!](https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot&permissions=36702208)
 
 ## Usage
 
@@ -15,6 +15,9 @@ This list assumes a prefix of `~~`.
 
 - `~~join`
   Type this while in a voice channel to have the bot join that channel and start playing there. Limited to users with the "manage server" permission.
+
+- `~~leave`
+  Makes the bot leave the voice channel it's currently in.
 
 - `~~np`
   Gets the currently playing song and artist. If the song was requested by someone, also gives their name and a link to their profile on forum.listen.moe.
