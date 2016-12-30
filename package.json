@@ -35,7 +35,7 @@
   ],
   "homepage": "https://github.com/anonymousthing/listen.moe-djs#readme",
   "dependencies": {
-    "discord.js": "github:kanadeko/discord.js#indev",
+    "discord.js": "kanadeko/discord.js#indev",
     "merge": "^1.2.0",
     "node-opus": "^0.2.4",
     "raven": "^1.1.1",
@@ -44,7 +44,7 @@
     "ws": "^1.1.1"
   },
   "devDependencies": {
-    "eslint": "^3.9.1"
+    "eslint": "^3.12.2"
   },
   "engines": {
     "node": ">=6.0.0"
