@@ -91,16 +91,19 @@ client.on('error', winston.error)
 	.on('reconnect', () => { winston.warn('CLIENT: Reconnecting...'); })
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	.on('message', msg => {
+		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
+
+		if (!msg.content.startsWith(prefix)) return;
+		if (msg.author.bot) return;
 		if (msg.channel.type === 'dm') return;
 
 		const permission = msg.channel.permissionsFor(msg.client.user);
 		if (!permission.hasPermission('SEND_MESSAGES')) return;
 
 		const ignored = guilds.get(msg.guild.id, 'ignore', []);
-		const manageGuild = msg.member.permissions.hasPermission('MANAGE_GUILD');
+		const manageGuild = msg.member.hasPermission('MANAGE_GUILD');
 		if (!manageGuild && ignored.includes(msg.channel.id)) return;
 
-		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
 		const message = msg.content.toLowerCase();
 
 		if (message.startsWith(`${prefix}join`)) {
