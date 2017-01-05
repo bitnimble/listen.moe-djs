@@ -6,13 +6,13 @@
   "author": "iCrawl",
   "contributors": [
     {
+      "name": "Geo1088"
+    },
+    {
       "name": "anonymousthing"
     },
     {
       "name": "kanadeko"
-    },
-    {
-      "name": "Geo1088"
     }
   ],
   "scripts": {
@@ -50,6 +50,6 @@
     "eslint": "^3.12.2"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=7.0.0"
   }
 }
