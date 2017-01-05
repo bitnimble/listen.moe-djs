@@ -1,0 +1,11 @@
+{
+    "token": "Your bot token here",
+    "stream": "https://listen.moe/stream",
+    "streamInfo": "wss://listen.moe/api/v2/socket",
+    "ua": "Listen.moe Discord v0.2.0 (https://github.com/WeebDev/listen.moe-discord)",
+    "owners": [
+        "User ID who should have access to eval",
+        "You can put multiples here"
+    ],
+    "ravenKey": "Just leave this as is if you dont use Sentry and comment out the Raven.install() and Raven.config(config.ravenKey)"
+}
