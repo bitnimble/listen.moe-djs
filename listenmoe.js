@@ -51,18 +51,18 @@ function connectWS(info) {
 	ws.on('error', winston.error);
 }
 
-function currentSongGame() {
-	let game = 'loading data...';
-	if (radioJSON !== {}) game = `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`;
-	client.user.setGame(game);
-
-	return setTimeout(currentUsersAndGuildsGame, 20000);
-}
-
 function currentUsersAndGuildsGame() {
 	client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
 
 	return setTimeout(currentSongGame, 10000);
+}
+
+function currentSongGame() {
+	let game = 'loading data...';
+	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
+	client.user.setGame(game);
+
+	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
 
 setInterval(() => {
@@ -80,9 +80,9 @@ client.on('error', winston.error)
 			Currently in ${client.guilds.size} servers.
 		`);
 		guilds.startup();
-		currentSongGame();
+		connectWS(config.streamInfo);
+		currentUsersAndGuildsGame();
 	})
-	.once('ready', () => { connectWS(config.streamInfo); })
 	.on('disconnect', () => { winston.warn('CLIENT: Disconnected!'); })
 	.on('reconnect', () => { winston.warn('CLIENT: Reconnecting...'); })
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
@@ -92,9 +92,12 @@ client.on('error', winston.error)
 		const permission = msg.channel.permissionsFor(msg.client.user);
 		if (!permission.hasPermission('SEND_MESSAGES')) return;
 
+		const ignored = guilds.get(msg.guild.id, 'ignore', []);
+		const manageGuild = msg.member.permissions.hasPermission('MANAGE_GUILD');
+		if (!manageGuild && ignored.includes(msg.channel.id)) return;
+
 		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
 		const message = msg.content.toLowerCase();
-		const manageGuild = msg.member.permissions.hasPermission('MANAGE_GUILD');
 
 		if (message.startsWith(`${prefix}join`)) {
 			if (!manageGuild) {
@@ -227,6 +230,54 @@ client.on('error', winston.error)
 			winston.info(`PREFIX CHANGE: "${msg.content.substr(prefix.length + 7)}" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'prefix', msg.content.substr(prefix.length + 7));
 			msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\``);
+		} else if (message.startsWith(`${prefix}ignore`)) {
+			if (!manageGuild) {
+				msg.reply('only a member with manage guild permission can change ignored channels, gomen!');
+				return;
+			}
+
+			if (ignored.includes(msg.channel.id)) {
+				msg.reply('this channel is already on the ignore list, baka!');
+				return;
+			}
+
+			ignored.push(msg.channel.id);
+
+			winston.info(`CHANNEL IGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+			guilds.set(msg.guild.id, 'ignore', ignored);
+			msg.reply('gotcha! I\'m going to ignore this channel now.');
+		} else if (message.startsWith(`${prefix}unignore`)) {
+			if (!manageGuild) {
+				msg.reply('only a member with manage guild permission can change ignored channels, gomen!');
+				return;
+			}
+
+			if (typeof ignored === 'undefined') {
+				msg.reply('this channel isn\'t on the ignore list, gomen!');
+				return;
+			}
+
+			if (!ignored.includes(msg.channel.id)) {
+				msg.reply('this channel isn\'t on the ignore list, gomen!');
+				return;
+			}
+
+			if (ignored.length === 1) {
+				winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				guilds.remove(msg.guild.id, 'ignore');
+				msg.reply('gotcha! I\'m not going to ignore this channel anymore.');
+				return;
+			}
+
+			const findIgnored = ignored.indexOf(msg.channel.id);
+
+			if (findIgnored > -1) {
+				ignored.splice(findIgnored, 1);
+			}
+
+			winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+			guilds.set(msg.guild.id, 'ignore', ignored);
+			msg.reply('gotcha! I\'m not going to ignore this channel anymore.');
 		}
 	});
 
