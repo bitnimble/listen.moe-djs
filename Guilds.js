@@ -1,8 +1,12 @@
-const request = require('request-promise');
+const request = require('https');
 const winston = require('winston');
 
 const config = require('./config');
-const stream = request(config.stream);
+let stream;
+request.get(config.stream, res => stream = res) // eslint-disable-line no-return-assign
+	.once('error', () => {
+		process.exit(1);
+	});
 
 class Guilds {
 	constructor(db, client) {
