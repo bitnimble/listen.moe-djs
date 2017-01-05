@@ -160,8 +160,8 @@ client.on('error', winston.error)
 				users = 0;
 			}
 
-			let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
-			let requestedBy = radioJSON.requested_by ? `**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+			let nowplaying = `${radioJSON.song_name} - ${radioJSON.artist_name}`;
+			let requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
 			let song = `${nowplaying}\n${requestedBy}`;
 
 			msg.channel.sendEmbed({
@@ -172,15 +172,15 @@ client.on('error', winston.error)
 				},
 				title: 'LISTEN.moe (Click here to add the radio bot to your server)',
 				url: 'https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot&permissions=36702208',
-				description: song,
 				fields: [
+					{ name: 'Now playing', value: song },
 					{ name: 'Radio Listeners', value: radioJSON.listeners, inline: true },
 					{ name: 'Discord Listeners', value: users, inline: true },
 					{ name: 'Servers', value: client.guilds.size, inline: true },
 					{ name: 'Voice Channels', value: client.voiceConnections.size, inline: true }
 				],
 				timestamp: new Date(),
-				thumbnail: { url: 'http://i.imgur.com/Jfz6qak.png' },
+				thumbnail: { url: 'http://i.imgur.com/Jfz6qak.png' }
 			});
 		} else if (message.startsWith(`${prefix}help`)) {
 			msg.channel.sendEmbed({
@@ -199,8 +199,8 @@ client.on('error', winston.error)
 				color: 15473237
 			});
 		} else if (message.startsWith(`${prefix}np`)) {
-			let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
-			let requestedBy = radioJSON.requested_by ? `**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+			let nowplaying = `${radioJSON.song_name} - ${radioJSON.artist_name}`;
+			let requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
 			let song = `${nowplaying}\n${requestedBy}`;
 
 			msg.channel.sendEmbed({
