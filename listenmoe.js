@@ -105,17 +105,17 @@ client.on('error', winston.error)
 
 		if (message.startsWith(`${prefix}join`)) {
 			if (!manageGuild) {
-				msg.reply('only a member with manage guild permission can add me to a voice channel, gomen!');
+				msg.reply('only a member with manage guild permission can add me to a voice channel, gomen! <(￢0￢)>');
 				return;
 			}
 
 			if (client.voiceConnections.get(msg.guild.id)) {
-				msg.reply('I am already in a voice channel here, baka!');
+				msg.reply('I am already in a voice channel here, baka! ｡゜(｀Д´)゜｡');
 				return;
 			}
 
 			if (!msg.member.voiceChannel) {
-				msg.reply('you have to be in a voice channel to add me, baka!');
+				msg.reply('you have to be in a voice channel to add me, baka! ｡゜(｀Д´)゜｡');
 				return;
 			}
 
@@ -123,19 +123,20 @@ client.on('error', winston.error)
 
 			guilds.set(msg.guild.id, 'voiceChannel', voiceChannel.id);
 			guilds.joinVoice(msg.guild, voiceChannel);
+			msg.channel.sendMessage(`Streaming to your server now, ${msg.author}-san! (* ^ ω ^)`);
 		} else if (message.startsWith(`${prefix}leave`)) {
 			if (!manageGuild) {
-				msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen!');
+				msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen! <(￢0￢)>');
 				return;
 			}
 
 			if (!client.voiceConnections.get(msg.guild.id)) {
-				msg.reply('you didn\'t add me to a voice channel yet, baka!');
+				msg.reply('you didn\'t add me to a voice channel yet, baka! ｡゜(｀Д´)゜｡');
 				return;
 			}
 
 			if (!msg.member.voiceChannel) {
-				msg.reply('you have to be in a voice channel to remove me, baka!');
+				msg.reply('you have to be in a voice channel to remove me, baka! ｡゜(｀Д´)゜｡');
 				return;
 			}
 
@@ -143,9 +144,10 @@ client.on('error', winston.error)
 
 			guilds.set(msg.guild.id, 'voiceChannel');
 			guilds.leaveVoice(msg.guild, voiceChannel);
+			msg.channel.sendMessage(`I will stop streaming to your server now, ${msg.author}-san. (-ω-、)`);
 		} else if (message.startsWith(`${prefix}stats`)) {
 			if (!config.owners.includes(msg.author.id)) {
-				msg.channel.sendMessage('Only the Botowners can view stats, gomen!');
+				msg.channel.sendMessage('Only the Botowners can view stats, gomen! 	<(￢0￢)>');
 				return;
 			}
 
@@ -207,7 +209,7 @@ client.on('error', winston.error)
 			});
 		} else if (message.startsWith(`${prefix}eval`)) {
 			if (!config.owners.includes(msg.author.id)) {
-				msg.channel.sendMessage('Only the Botowners can eval, gomen!');
+				msg.channel.sendMessage('Only the Botowners can eval, gomen! <(￢0￢)>');
 				return;
 			}
 
@@ -222,33 +224,38 @@ client.on('error', winston.error)
 			msg.channel.sendCode('javascript', result, { split: true });
 		} else if (message.startsWith(`${prefix}prefix`)) {
 			if (!manageGuild) {
-				msg.reply('only a member with manage guild permission can change my prefix, gomen!');
+				msg.reply('only a member with manage guild permission can change my prefix, gomen! <(￢0￢)>');
+				return;
+			}
+
+			if (msg.content === `${prefix}prefix default`) {
+				winston.info(`PREFIX RESET: "~~" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				guilds.remove(msg.guild.id, 'prefix');
+				msg.channel.sendMessage(`Prefix resetted to \`~~\` (⌒_⌒;)`);
 				return;
 			}
 
 			if (msg.content === `${prefix}prefix`) {
-				winston.info(`PREFIX RESET: "~~" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
-				guilds.remove(msg.guild.id, 'prefix');
-				msg.channel.sendMessage(`Prefix resetted to \`~~\``);
+				msg.channel.sendMessage(`The current prefix is \`${prefix}\` (⌒_⌒;)`);
 				return;
 			}
 
-			if (/[a-zA-Z0-9\s\n]/.test()) {
-				msg.channel.sendMessage('Prefix can\'t be a letter, number, or whitespace character, gomen!');
+			if (/[a-zA-Z0-9\s\n]/.test(msg.content.substr(prefix.length + 7))) {
+				msg.channel.sendMessage('Prefix can\'t be a letter, number, or whitespace character, gomen! <(￢0￢)>');
 				return;
 			}
 
 			winston.info(`PREFIX CHANGE: "${msg.content.substr(prefix.length + 7)}" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'prefix', msg.content.substr(prefix.length + 7));
-			msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\``);
+			msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\` (⌒_⌒;)`);
 		} else if (message.startsWith(`${prefix}ignore`)) {
 			if (!manageGuild) {
-				msg.reply('only a member with manage guild permission can change ignored channels, gomen!');
+				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
 				return;
 			}
 
 			if (ignored.includes(msg.channel.id)) {
-				msg.reply('this channel is already on the ignore list, baka!');
+				msg.reply('this channel is already on the ignore list, baka! ｡゜(｀Д´)゜｡');
 				return;
 			}
 
@@ -256,27 +263,27 @@ client.on('error', winston.error)
 
 			winston.info(`CHANNEL IGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
-			msg.reply('gotcha! I\'m going to ignore this channel now.');
+			msg.reply('gotcha! I\'m going to ignore this channel now. (￣▽￣)');
 		} else if (message.startsWith(`${prefix}unignore`)) {
 			if (!manageGuild) {
-				msg.reply('only a member with manage guild permission can change ignored channels, gomen!');
+				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
 				return;
 			}
 
 			if (typeof ignored === 'undefined') {
-				msg.reply('this channel isn\'t on the ignore list, gomen!');
+				msg.reply('this channel isn\'t on the ignore list, gomen! <(￢0￢)>');
 				return;
 			}
 
 			if (!ignored.includes(msg.channel.id)) {
-				msg.reply('this channel isn\'t on the ignore list, gomen!');
+				msg.reply('this channel isn\'t on the ignore list, gomen! <(￢0￢)>');
 				return;
 			}
 
 			if (ignored.length === 1) {
 				winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'ignore');
-				msg.reply('gotcha! I\'m not going to ignore this channel anymore.');
+				msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 				return;
 			}
 
@@ -288,7 +295,7 @@ client.on('error', winston.error)
 
 			winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
-			msg.reply('gotcha! I\'m not going to ignore this channel anymore.');
+			msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 		}
 	});
 
