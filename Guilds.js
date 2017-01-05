@@ -18,19 +18,29 @@ class Guilds {
 
 		const rows = await this.db.all('SELECT CAST(guild as TEXT) as guild, settings FROM guilds');
 
-		for (const row of rows) {
+		let currentRow = 0;
+
+		const inverval = setInterval(() => {
 			let settings;
 			try {
-				settings = JSON.parse(row.settings);
+				settings = JSON.parse(rows[currentRow].settings);
 			} catch (error) {
-				continue;
+				return;
 			}
 
-			const guild = row.guild;
-			if (!this.client.guilds.has(guild)) continue;
+			const guild = rows[currentRow].guild;
+			if (!this.client.guilds.has(guild)) {
+				this.clear(guild.id);
+				currentRow++;
+				return;
+			}
 			this.settings.set(guild, settings);
 			this.setupGuild(guild, settings);
-		}
+
+			currentRow++;
+
+			if (currentRow === rows.length) clearInterval(inverval);
+		}, 1000);
 
 		const statements = await Promise.all([
 			this.db.prepare('INSERT OR REPLACE INTO guilds VALUES(?, ?)'),
@@ -92,6 +102,7 @@ class Guilds {
 		if (typeof settings.prefix !== 'undefined') guild.commandPrefix = settings.prefix;
 		if (typeof settings.voiceChannel !== 'undefined') {
 			const voiceChannel = guild.channels.get(settings.voiceChannel);
+			if (!voiceChannel) return;
 
 			this.joinVoice(guild, voiceChannel);
 		}
@@ -101,6 +112,10 @@ class Guilds {
 		voiceChannel.join({ shared: true }).then(vc => {
 			winston.info(`ADDED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			vc.playSharedStream('listen.moe', request(config.stream));
+		}).catch(error => {
+			winston.error(`ERROR VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
+			winston.error(error.message);
+			this.remove(guild.id, 'voiceChannel');
 		});
 	}
 
