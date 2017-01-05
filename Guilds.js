@@ -1,4 +1,5 @@
 const request = require('request-promise');
+const winston = require('winston');
 
 const config = require('./config');
 
@@ -26,8 +27,8 @@ class Guilds {
 			}
 
 			const guild = row.guild;
+			if (!this.client.guilds.has(guild)) continue;
 			this.settings.set(guild, settings);
-			if (!this.client.guilds.has(row.guild)) continue;
 			this.setupGuild(guild, settings);
 		}
 
@@ -92,14 +93,21 @@ class Guilds {
 		if (typeof settings.voiceChannel !== 'undefined') {
 			const voiceChannel = guild.channels.get(settings.voiceChannel);
 
-			this.joinVoice(voiceChannel);
+			this.joinVoice(guild, voiceChannel);
 		}
 	}
 
-	joinVoice(voiceChannel) {
+	joinVoice(guild, voiceChannel) {
 		voiceChannel.join({ shared: true }).then(vc => {
+			winston.info(`ADDED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			vc.playSharedStream('listen.moe', request(config.stream));
 		});
+	}
+
+	leaveVoice(guild, voiceChannel) {
+		winston.info(`REMOVED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
+		voiceChannel.leaveSharedStream();
+		voiceChannel.disconnect();
 	}
 }
 
