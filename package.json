@@ -1,9 +1,9 @@
 {
-  "name": "listen.moe-discord-bot",
-  "version": "0.1.0",
-  "description": "The official discord bot that streams listen.moe to your server.",
+  "name": "listen.moe-discord",
+  "version": "0.2.0",
+  "description": "The official discord bot that streams to your server.",
   "license": "MIT",
-  "author": "Geo1088",
+  "author": "iCrawl",
   "contributors": [
     {
       "name": "anonymousthing"
@@ -12,7 +12,7 @@
       "name": "kanadeko"
     },
     {
-      "name": "iCrawl"
+      "name": "Geo1088"
     }
   ],
   "scripts": {
@@ -21,10 +21,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anonymousthing/listen.moe-djs.git"
+    "url": "git+https://github.com/WeebDev/listen.moe-discord.git"
   },
   "bugs": {
-    "url": "https://github.com/anonymousthing/listen.moe-djs/issues"
+    "url": "https://github.com/WeebDev/listen.moe-discord/issues"
   },
   "keywords": [
     "discord",
@@ -33,15 +33,14 @@
     "listen",
     "music"
   ],
-  "homepage": "https://github.com/anonymousthing/listen.moe-djs#readme",
+  "homepage": "https://github.com/WeebDev/listen.moe-discord#readme",
   "dependencies": {
-    "discord.js": "kanadeko/discord.js#indev",
+    "discord.js": "WeebDev/discord.js",
     "merge": "^1.2.0",
     "node-opus": "^0.2.4",
     "raven": "^1.1.1",
-    "request": "^2.74.0",
-    "require-reload": "^0.2.2",
-    "ws": "^1.1.1"
+    "request": "^2.79.0",
+    "require-reload": "^0.2.2"
   },
   "devDependencies": {
     "eslint": "^3.12.2"
