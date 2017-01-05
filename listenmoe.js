@@ -161,26 +161,26 @@ client.on('error', winston.error)
 			}
 
 			let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
-			let requestedBy = radioJSON.requested_by ? `\n**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
-			let description = `\n${nowplaying}${requestedBy}\n`;
+			let requestedBy = radioJSON.requested_by ? `**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+			let song = `${nowplaying}\n${requestedBy}`;
 
 			msg.channel.sendEmbed({
+				color: 15473237,
+				author: {
+					url: 'https://github.com/WeebDev/listen.moe-discord',
+					name: 'Crawl, Geo & Anon'
+				},
 				title: 'LISTEN.moe (Click here to add the radio bot to your server)',
 				url: 'https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot&permissions=36702208',
-				description: description,
-				color: 15473237,
+				description: song,
 				fields: [
-					{ name: 'Radio Listeners', value: `${radioJSON.listeners}`, inline: true },
+					{ name: 'Radio Listeners', value: radioJSON.listeners, inline: true },
 					{ name: 'Discord Listeners', value: users, inline: true },
 					{ name: 'Servers', value: client.guilds.size, inline: true },
 					{ name: 'Voice Channels', value: client.voiceConnections.size, inline: true }
 				],
 				timestamp: new Date(),
 				thumbnail: { url: 'http://i.imgur.com/Jfz6qak.png' },
-				author: {
-					url: 'https://github.com/WeebDev/listen.moe-discord',
-					name: 'Crawl'
-				}
 			});
 		} else if (message.startsWith(`${prefix}help`)) {
 			msg.channel.sendEmbed({
@@ -200,12 +200,14 @@ client.on('error', winston.error)
 			});
 		} else if (message.startsWith(`${prefix}np`)) {
 			let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
-			let requestedBy = radioJSON.requested_by ? `\n**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
-			let description = `\n${nowplaying}${requestedBy}\n`;
+			let requestedBy = radioJSON.requested_by ? `**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+			let song = `${nowplaying}\n${requestedBy}`;
 
 			msg.channel.sendEmbed({
-				description: description,
-				color: 15473237
+				color: 15473237,
+				fields: [
+					{ name: 'Now playing', value: song }
+				]
 			});
 		} else if (message.startsWith(`${prefix}eval`)) {
 			if (!config.owners.includes(msg.author.id)) {
