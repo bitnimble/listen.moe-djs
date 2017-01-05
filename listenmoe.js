@@ -24,8 +24,8 @@ let ws;
 
 sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
 
-//Raven.config(config.ravenKey);
-//Raven.install();
+Raven.config(config.ravenKey);
+Raven.install();
 
 function connectWS(info) {
 	if (ws) ws.removeAllListeners();
@@ -160,9 +160,9 @@ client.on('error', winston.error)
 				users = 0;
 			}
 
-			let nowplaying = `${radioJSON.song_name} - ${radioJSON.artist_name}`;
-			let requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
-			let song = `${nowplaying}\n${requestedBy}`;
+			const nowplaying = `${radioJSON.song_name} - ${radioJSON.artist_name}`;
+			const requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+			const song = `${nowplaying}\n\n${requestedBy}`;
 
 			msg.channel.sendEmbed({
 				color: 15473237,
@@ -199,9 +199,9 @@ client.on('error', winston.error)
 				color: 15473237
 			});
 		} else if (message.startsWith(`${prefix}np`)) {
-			let nowplaying = `${radioJSON.song_name} - ${radioJSON.artist_name}`;
-			let requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
-			let song = `${nowplaying}\n${requestedBy}`;
+			const nowplaying = `${radioJSON.song_name} - ${radioJSON.artist_name}`;
+			const requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
+			const song = `${nowplaying}\n\n${requestedBy}`;
 
 			msg.channel.sendEmbed({
 				color: 15473237,
