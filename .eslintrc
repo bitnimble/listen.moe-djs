@@ -12,6 +12,7 @@
     "accessor-pairs": "warn",
     "array-callback-return": "error",
     "complexity": "warn",
+    "consistent-return": "error",
     "curly": ["error", "multi-line", "consistent"],
     "dot-location": ["error", "property"],
     "dot-notation": "error",
@@ -60,8 +61,8 @@
     "eol-last": "error",
     "func-names": "error",
     "func-style": ["error", "declaration", { "allowArrowFunctions": true }],
-    "id-length": ["error", { "exceptions": ["i", "j", "a", "b", "c", "m"] }],
-    "indent": ["error", 4],
+    "id-length": ["error", { "exceptions": ["i", "j", "a", "b"] }],
+    "indent": ["error", "tab", { "SwitchCase": 1 }],
     "key-spacing": "error",
     "keyword-spacing": ["error", {
       "overrides": {

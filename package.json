@@ -35,12 +35,16 @@
   ],
   "homepage": "https://github.com/WeebDev/listen.moe-discord#readme",
   "dependencies": {
+    "bluebird": "^3.4.7",
+    "common-tags": "^1.4.0",
     "discord.js": "WeebDev/discord.js",
     "merge": "^1.2.0",
     "node-opus": "^0.2.4",
     "raven": "^1.1.1",
     "request": "^2.79.0",
-    "require-reload": "^0.2.2"
+    "request-promise": "^4.1.1",
+    "sqlite": "^2.2.4",
+    "winston": "^2.3.0"
   },
   "devDependencies": {
     "eslint": "^3.12.2"
