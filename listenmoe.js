@@ -87,8 +87,10 @@ client.on('error', winston.error)
 		connectWS(config.streamInfo);
 		currentUsersAndGuildsGame();
 	})
-	.on('disconnect', () => { winston.warn('CLIENT: Disconnected!'); })
-	.on('reconnect', () => { winston.warn('CLIENT: Reconnecting...'); })
+	.on('disconnect', () => {
+		winston.warn('CLIENT: Disconnected!');
+		process.exit(1);
+	})
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	.on('message', msg => {
 		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
