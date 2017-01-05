@@ -105,7 +105,7 @@ class Guilds {
 	}
 
 	leaveVoice(guild, voiceChannel) {
-		winston.info(`REMOVED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
+		winston.info(`REMOVED VOICE CONNECTION: For guild ${guild.name} (${guild.id})`);
 		voiceChannel.leaveSharedStream();
 		voiceChannel.disconnect();
 	}

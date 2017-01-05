@@ -66,9 +66,13 @@ function currentSongGame() {
 }
 
 setInterval(() => {
-	listeners = client.voiceConnections
-		.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
-		.reduce((sum, members) => sum + members);
+	try {
+		listeners = client.voiceConnections
+			.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
+			.reduce((sum, members) => sum + members);
+	} catch (error) {
+		listeners = 0;
+	}
 }, 30000);
 
 client.on('error', winston.error)
@@ -135,17 +139,24 @@ client.on('error', winston.error)
 				return;
 			}
 
-			guilds.set(msg.guild.id, 'voiceChannel', undefined);
-			guilds.leaveVoice(msg.guild, client.voiceConnections.get(msg.guild.id));
+			const voiceChannel = client.voiceConnections.get(msg.guild.id);
+
+			guilds.set(msg.guild.id, 'voiceChannel');
+			guilds.leaveVoice(msg.guild, voiceChannel);
 		} else if (message.startsWith(`${prefix}stats`)) {
 			if (!config.owners.includes(msg.author.id)) {
 				msg.channel.sendMessage('Only the Botowners can view stats, gomen!');
 				return;
 			}
 
-			const users = client.voiceConnections
-				.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
-				.reduce((sum, members) => sum + members);
+			let users;
+			try {
+				users = client.voiceConnections
+					.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
+					.reduce((sum, members) => sum + members);
+			} catch (error) {
+				users = 0;
+			}
 
 			let nowplaying = `**Now playing:** ${radioJSON.song_name} **by** ${radioJSON.artist_name}`;
 			let requestedBy = radioJSON.requested_by ? `\n**Requested by:** [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
