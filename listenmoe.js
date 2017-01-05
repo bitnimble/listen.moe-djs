@@ -18,6 +18,7 @@ const client = new Discord.Client({
 });
 
 let guilds;
+let listeners = 0;
 let radioJSON;
 let ws;
 
@@ -50,6 +51,26 @@ function connectWS(info) {
 	ws.on('error', winston.error);
 }
 
+function currentSongGame() {
+	let game = 'loading data...';
+	if (radioJSON !== {}) game = `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`;
+	client.user.setGame(game);
+
+	return setTimeout(currentUsersAndGuildsGame, 20000);
+}
+
+function currentUsersAndGuildsGame() {
+	client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+
+	return setTimeout(currentSongGame, 10000);
+}
+
+setInterval(() => {
+	listeners = client.voiceConnections
+		.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
+		.reduce((sum, members) => sum + members);
+}, 30000);
+
 client.on('error', winston.error)
 	.on('warn', winston.warn)
 	.on('ready', () => {
@@ -59,11 +80,11 @@ client.on('error', winston.error)
 			Currently in ${client.guilds.size} servers.
 		`);
 		guilds.startup();
+		currentSongGame();
 	})
 	.once('ready', () => { connectWS(config.streamInfo); })
 	.on('disconnect', () => { winston.warn('CLIENT: Disconnected!'); })
 	.on('reconnect', () => { winston.warn('CLIENT: Reconnecting...'); })
-	.on('guildCreate', guild => {  })
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	.on('message', msg => {
 		if (msg.channel.type === 'dm') return;
