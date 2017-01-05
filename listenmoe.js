@@ -22,7 +22,7 @@ let listeners = 0;
 let radioJSON;
 let ws;
 
-sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client));
+sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
 
 //Raven.config(config.ravenKey);
 //Raven.install();
@@ -235,11 +235,6 @@ client.on('error', winston.error)
 				return;
 			}
 
-			if (msg.content === `${prefix}prefix`) {
-				msg.channel.sendMessage(`The current prefix is \`${prefix}\` (⌒_⌒;)`);
-				return;
-			}
-
 			if (/[a-zA-Z0-9\s\n]/.test(msg.content.substr(prefix.length + 7))) {
 				msg.channel.sendMessage('Prefix can\'t be a letter, number, or whitespace character, gomen! <(￢0￢)>');
 				return;
@@ -251,6 +246,16 @@ client.on('error', winston.error)
 		} else if (message.startsWith(`${prefix}ignore`)) {
 			if (!manageGuild) {
 				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
+				return;
+			}
+
+			if (msg.content === `${prefix}ignore all`) {
+				const channels = msg.guild.channels;
+
+				winston.info(`CHANNEL IGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				for (const [key] of channels) ignored.push(key);
+				guilds.set(msg.guild.id, 'ignore', ignored);
+				msg.reply('gotcha! I\'m going to ignore all channels now. (￣▽￣)');
 				return;
 			}
 
@@ -271,7 +276,14 @@ client.on('error', winston.error)
 			}
 
 			if (typeof ignored === 'undefined') {
-				msg.reply('this channel isn\'t on the ignore list, gomen! <(￢0￢)>');
+				msg.reply('there are  no channels on the ignore list, gomen! <(￢0￢)>');
+				return;
+			}
+
+			if (msg.content === `${prefix}unignore all`) {
+				winston.info(`CHANNEL UNIGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				guilds.remove(msg.guild.id, 'ignore');
+				msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore any channels anymore).');
 				return;
 			}
 
@@ -295,7 +307,7 @@ client.on('error', winston.error)
 
 			winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
-			msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
+			msg.reply('I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 		}
 	});
 
