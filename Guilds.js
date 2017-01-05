@@ -2,6 +2,7 @@ const request = require('request-promise');
 const winston = require('winston');
 
 const config = require('./config');
+const stream = request(config.stream);
 
 class Guilds {
 	constructor(db, client) {
@@ -111,7 +112,7 @@ class Guilds {
 	joinVoice(guild, voiceChannel) {
 		voiceChannel.join({ shared: true }).then(vc => {
 			winston.info(`ADDED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
-			vc.playSharedStream('listen.moe', request(config.stream));
+			vc.playSharedStream('listen.moe', stream);
 		}).catch(error => {
 			winston.error(`ERROR VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			winston.error(error.message);
