@@ -102,12 +102,12 @@ client.on('error', winston.error)
 
 		const ignored = guilds.get(msg.guild.id, 'ignore', []);
 		const manageGuild = msg.member.hasPermission('MANAGE_GUILD');
-		if (!manageGuild && ignored.includes(msg.channel.id)) return;
+		if (!config.owners.includes(msg.author.id) && !manageGuild && ignored.includes(msg.channel.id)) return;
 
 		const message = msg.content.toLowerCase();
 
 		if (message.startsWith(`${prefix}join`)) {
-			if (!manageGuild) {
+			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				msg.reply('only a member with manage guild permission can add me to a voice channel, gomen! <(￢0￢)>');
 				return;
 			}
@@ -128,7 +128,7 @@ client.on('error', winston.error)
 			guilds.joinVoice(msg.guild, voiceChannel);
 			msg.channel.sendMessage(`Streaming to your server now, ${msg.author}-san! (* ^ ω ^)`);
 		} else if (message.startsWith(`${prefix}leave`)) {
-			if (!manageGuild) {
+			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen! <(￢0￢)>');
 				return;
 			}
@@ -230,7 +230,7 @@ client.on('error', winston.error)
 
 			msg.channel.sendCode('javascript', result, { split: true });
 		} else if (message.startsWith(`${prefix}prefix`)) {
-			if (!manageGuild) {
+			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				msg.reply('only a member with manage guild permission can change my prefix, gomen! <(￢0￢)>');
 				return;
 			}
@@ -251,7 +251,7 @@ client.on('error', winston.error)
 			guilds.set(msg.guild.id, 'prefix', msg.content.substr(prefix.length + 7));
 			msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\` (⌒_⌒;)`);
 		} else if (message.startsWith(`${prefix}ignore`)) {
-			if (!manageGuild) {
+			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
 				return;
 			}
@@ -277,7 +277,7 @@ client.on('error', winston.error)
 			guilds.set(msg.guild.id, 'ignore', ignored);
 			msg.reply('gotcha! I\'m going to ignore this channel now. (￣▽￣)');
 		} else if (message.startsWith(`${prefix}unignore`)) {
-			if (!manageGuild) {
+			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
 				return;
 			}
