@@ -120,7 +120,6 @@ class Guilds {
 		}).catch(error => {
 			winston.error(`ERROR VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			winston.error(error.message);
-			this.remove(guild.id, 'voiceChannel');
 		});
 	}
 
