@@ -110,6 +110,11 @@ client.on('error', winston.error)
 
 		if (message.startsWith(`${prefix}join`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
+				if (msg.author.id === '83700966167150592') {
+					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
+					return;
+				}
+
 				msg.reply('only a member with manage guild permission can add me to a voice channel, gomen! <(￢0￢)>');
 				return;
 			}
@@ -131,6 +136,11 @@ client.on('error', winston.error)
 			msg.channel.sendMessage(`Streaming to your server now, ${msg.author}-san! (* ^ ω ^)`);
 		} else if (message.startsWith(`${prefix}leave`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
+				if (msg.author.id === '83700966167150592') {
+					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
+					return;
+				}
+
 				msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen! <(￢0￢)>');
 				return;
 			}
@@ -152,6 +162,11 @@ client.on('error', winston.error)
 			msg.channel.sendMessage(`I will stop streaming to your server now, ${msg.author}-san. (-ω-、)`);
 		} else if (message.startsWith(`${prefix}stats`)) {
 			if (!config.owners.includes(msg.author.id)) {
+				if (msg.author.id === '83700966167150592') {
+					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
+					return;
+				}
+
 				msg.channel.sendMessage('Only the Botowners can view stats, gomen! 	<(￢0￢)>');
 				return;
 			}
@@ -174,7 +189,7 @@ client.on('error', winston.error)
 				color: 15473237,
 				author: {
 					url: 'https://github.com/WeebDev/listen.moe-discord',
-					name: 'Crawl, Geo & Anon'
+					name: 'Crawl, Geo, Anon & Kana'
 				},
 				title: 'LISTEN.moe (Click here to add the radio bot to your server)',
 				url: 'https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot&permissions=36702208',
@@ -233,6 +248,11 @@ client.on('error', winston.error)
 			msg.channel.sendCode('javascript', result, { split: true });
 		} else if (message.startsWith(`${prefix}prefix`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
+				if (msg.author.id === '83700966167150592') {
+					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
+					return;
+				}
+
 				msg.reply('only a member with manage guild permission can change my prefix, gomen! <(￢0￢)>');
 				return;
 			}
