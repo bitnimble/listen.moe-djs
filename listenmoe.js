@@ -91,6 +91,23 @@ client.on('error', winston.error)
 		winston.warn('CLIENT: Disconnected!');
 		process.exit(1);
 	})
+	.on('guildCreate', guild => {
+		guild.defaultChannel.sendEmbed({
+			description: stripIndents`**LISTEN.moe discord bot by Crawl**
+
+				**Usage:**
+				After adding me to your server, join a voice channel and type \`~~join\` to bind me to that voice channel.
+				Keep in mind that you need to have the \`Manage Server\` permission to use this command.
+
+				**Commands:**
+				**\\~~join**: Joins the voice channel you are currently in.
+				**\\~~leave**: Leaves the voice channel the bot is currently in.
+				**\\~~np**: Displays the currently playing song.
+
+				For additional commands and help, please visit [Github](https://github.com/WeebDev/listen.moe-discord)`,
+			color: 15473237
+		});
+	})
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	.on('message', msg => {
 		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
