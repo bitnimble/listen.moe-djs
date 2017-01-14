@@ -30,17 +30,23 @@ This list assumes a prefix of `~~`.
 
 - `~~unignore`
   Unignores commands in the current channel.
+  
+- `~~ignore all`
+  Ignores commands in all channels on the guild.
+  
+- `~~unignore all`
+  Unignores all channels on the guild.
 
 - `~~prefix <new prefix>`
   Changes the bot's prefix for this server. Prefixes cannot contain whitespace, letters, or numbers - anything else is fair game. It's recommended that you stick with the default prefix of `~~`, but this command is provided in case you find conflicts with other bots.
 
 ## Run it yourself
 
-NodeJS version 6+ is required. 
+NodeJS version 7+ is required. 
 
 - Clone the repo.
 - Create a Discord OAuth application and bot account.
 - Rename/duplicate `config-sample.json` to `config.json` and fill out the relevant information.
 - Install dependencies from npm.
 - Install ffmpeg - if on Windows, make sure to add it to your PATH.
-- Run the bot with `node index.js`
+- Run the bot with `node -harmony listenmoe.js` or if you use pm2 `pm2 start listenmoe.js --node-args="--harmony"`
