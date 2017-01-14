@@ -49,4 +49,4 @@ NodeJS version 7+ is required.
 - Rename/duplicate `config-sample.json` to `config.json` and fill out the relevant information.
 - Install dependencies from npm.
 - Install ffmpeg - if on Windows, make sure to add it to your PATH.
-- Run the bot with `node -harmony listenmoe.js` or if you use pm2 `pm2 start listenmoe.js --node-args="--harmony"`
+- Run the bot with `node --harmony listenmoe.js` or if you use pm2 `pm2 start listenmoe.js --node-args="--harmony"`
