@@ -174,7 +174,7 @@ client.on('error', winston.error)
 
 			const voiceChannel = client.voiceConnections.get(msg.guild.id);
 
-			guilds.set(msg.guild.id, 'voiceChannel');
+			guilds.remove(msg.guild.id, 'voiceChannel');
 			guilds.leaveVoice(msg.guild, voiceChannel);
 			msg.channel.sendMessage(`I will stop streaming to your server now, ${msg.author}-san. (-ω-、)`);
 		} else if (message.startsWith(`${prefix}stats`)) {
