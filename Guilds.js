@@ -52,7 +52,7 @@ class Guilds {
 			currentRow++;
 
 			if (currentRow === rows.length) clearInterval(inverval);
-		}, 2000);
+		}, 1000);
 
 		this.listeners
 			.set('guildCreate', guild => {
