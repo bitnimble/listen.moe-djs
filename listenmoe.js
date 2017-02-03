@@ -110,11 +110,11 @@ client.on('error', winston.error)
 	})
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	.on('message', msg => {
+		if (msg.channel.type === 'dm') return;
+		if (msg.author.bot) return;
 		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
 
 		if (!msg.content.startsWith(prefix)) return;
-		if (msg.author.bot) return;
-		if (msg.channel.type === 'dm') return;
 
 		const permission = msg.channel.permissionsFor(msg.client.user);
 		if (!permission.hasPermission('SEND_MESSAGES')) return;
