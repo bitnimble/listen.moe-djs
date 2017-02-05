@@ -1,11 +1,10 @@
 global.Promise = require('bluebird');
 
 const Discord = require('discord.js');
-const oneLine = require('common-tags').oneLine;
+const { oneLine, stripIndents } = require('common-tags');
 const path = require('path');
 const Raven = require('raven');
 const sqlite = require('sqlite');
-const stripIndents = require('common-tags').stripIndents;
 const WebSocket = require('ws');
 const winston = require('winston');
 
