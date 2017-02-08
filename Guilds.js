@@ -23,13 +23,6 @@ class Guilds {
 
 		const rows = await this.db.all('SELECT CAST(guild as TEXT) as guild, settings FROM guilds');
 
-		const statements = await Promise.all([
-			this.db.prepare('INSERT OR REPLACE INTO guilds VALUES(?, ?)'),
-			this.db.prepare('DELETE FROM guilds WHERE guild = ?')
-		]);
-		this.insertOrReplaceStmt = statements[0];
-		this.deleteStmt = statements[1];
-
 		let currentRow = 0;
 
 		const inverval = setInterval(() => {
@@ -54,6 +47,13 @@ class Guilds {
 			if (currentRow === rows.length) clearInterval(inverval);
 		}, 1000);
 
+		const statements = await Promise.all([
+			this.db.prepare('INSERT OR REPLACE INTO guilds VALUES(?, ?)'),
+			this.db.prepare('DELETE FROM guilds WHERE guild = ?')
+		]);
+		this.insertOrReplaceStmt = statements[0];
+		this.deleteStmt = statements[1];
+
 		this.listeners
 			.set('guildCreate', guild => {
 				const settings = this.settings.get(guild.id);
@@ -62,6 +62,16 @@ class Guilds {
 			});
 
 		for (const [event, listener] of this.listeners) this.client.on(event, listener);
+	}
+
+	async destroy() {
+		await Promise.all([
+			this.insertOrReplaceStmt.finalize(),
+			this.deleteStmt.finalize()
+		]);
+
+		for (const [event, listener] of this.listeners) this.client.removeListener(event, listener);
+		this.listeners.clear();
 	}
 
 	get(guild, key, defVal) {

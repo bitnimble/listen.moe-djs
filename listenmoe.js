@@ -32,7 +32,7 @@ function connectWS(info) {
 		ws = new WebSocket(info);
 		winston.info('WEBSOCKET: Connection A-OK!');
 	} catch (error) {
-		setTimeout(() => { connectWS(info); }, 3000);
+		setTimeout(() => { return connectWS(info); }, 3000);
 		winston.warn('WEBSOCKET: Couldn\'t connect, reconnecting...');
 	}
 
@@ -44,7 +44,7 @@ function connectWS(info) {
 		}
 	});
 	ws.on('close', () => {
-		setTimeout(() => { connectWS(info); }, 3000);
+		setTimeout(() => { return connectWS(info); }, 3000);
 		winston.warn('WEBSOCKET: Connection closed, reconnecting...');
 	});
 	ws.on('error', winston.error);
@@ -88,10 +88,10 @@ client.on('error', winston.error)
 	})
 	.on('disconnect', () => {
 		winston.warn('CLIENT: Disconnected!');
-		process.exit(1);
+		guilds.destroy();
 	})
 	.on('guildCreate', guild => {
-		guild.defaultChannel.sendEmbed({
+		return guild.defaultChannel.sendEmbed({
 			description: stripIndents`**LISTEN.moe discord bot by Crawl**
 
 				**Usage:**
@@ -108,7 +108,8 @@ client.on('error', winston.error)
 		});
 	})
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
-	.on('message', msg => {
+	/* eslint-disable consistent-return */
+	.on('message', msg => { // eslint-disable-line complexity
 		if (msg.channel.type === 'dm') return;
 		if (msg.author.bot) return;
 		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
@@ -116,7 +117,7 @@ client.on('error', winston.error)
 		if (!msg.content.startsWith(prefix)) return;
 
 		const permission = msg.channel.permissionsFor(msg.client.user);
-		if (!permission.hasPermission('SEND_MESSAGES')) return;
+		if (!permission || !permission.hasPermission('SEND_MESSAGES')) return;
 
 		const ignored = guilds.get(msg.guild.id, 'ignore', []);
 		const manageGuild = msg.member.hasPermission('MANAGE_GUILD');
@@ -127,64 +128,54 @@ client.on('error', winston.error)
 		if (message.startsWith(`${prefix}join`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				if (msg.author.id === '83700966167150592') {
-					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
-					return;
+					return msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
 				}
 
-				msg.reply('only a member with manage guild permission can add me to a voice channel, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('only a member with manage guild permission can add me to a voice channel, gomen! <(￢0￢)>');
 			}
 
 			if (client.voiceConnections.get(msg.guild.id)) {
-				msg.reply('I am already in a voice channel here, baka! ｡゜(｀Д´)゜｡');
-				return;
+				return msg.reply('I am already in a voice channel here, baka! ｡゜(｀Д´)゜｡');
 			}
 
 			if (!msg.member.voiceChannel) {
-				msg.reply('you have to be in a voice channel to add me, baka! ｡゜(｀Д´)゜｡');
-				return;
+				return msg.reply('you have to be in a voice channel to add me, baka! ｡゜(｀Д´)゜｡');
 			}
 
 			const voiceChannel = msg.guild.channels.get(msg.member.voiceChannel.id);
 
 			guilds.set(msg.guild.id, 'voiceChannel', voiceChannel.id);
 			guilds.joinVoice(msg.guild, voiceChannel);
-			msg.channel.sendMessage(`Streaming to your server now, ${msg.author}-san! (* ^ ω ^)`);
+			return msg.channel.sendMessage(`Streaming to your server now, ${msg.author}-san! (* ^ ω ^)`);
 		} else if (message.startsWith(`${prefix}leave`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				if (msg.author.id === '83700966167150592') {
-					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
-					return;
+					return msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
 				}
 
-				msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen! <(￢0￢)>');
 			}
 
 			if (!client.voiceConnections.get(msg.guild.id)) {
-				msg.reply('you didn\'t add me to a voice channel yet, baka! ｡゜(｀Д´)゜｡');
-				return;
+				return msg.reply('you didn\'t add me to a voice channel yet, baka! ｡゜(｀Д´)゜｡');
 			}
 
 			if (!msg.member.voiceChannel) {
-				msg.reply('you have to be in a voice channel to remove me, baka! ｡゜(｀Д´)゜｡');
-				return;
+				return msg.reply('you have to be in a voice channel to remove me, baka! ｡゜(｀Д´)゜｡');
 			}
 
 			const voiceChannel = client.voiceConnections.get(msg.guild.id);
 
 			guilds.remove(msg.guild.id, 'voiceChannel');
 			guilds.leaveVoice(msg.guild, voiceChannel);
-			msg.channel.sendMessage(`I will stop streaming to your server now, ${msg.author}-san. (-ω-、)`);
+			return msg.channel.sendMessage(`I will stop streaming to your server now, ${msg.author}-san. (-ω-、)`);
 		} else if (message.startsWith(`${prefix}stats`)) {
 			if (!config.owners.includes(msg.author.id)) {
 				if (msg.author.id === '83700966167150592') {
-					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
-					return;
+					return msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
 				}
 
-				msg.channel.sendMessage('Only the Botowners can view stats, gomen! 	<(￢0￢)>');
-				return;
+				return msg.channel.sendMessage('Only the Botowners can view stats, gomen! 	<(￢0￢)>');
 			}
 
 			let users;
@@ -201,7 +192,7 @@ client.on('error', winston.error)
 			const requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
 			const song = `${nowplaying}\n\n${anime}\n${requestedBy}`;
 
-			msg.channel.sendEmbed({
+			return msg.channel.sendEmbed({
 				color: 15473237,
 				author: {
 					url: 'https://github.com/WeebDev/listen.moe-discord',
@@ -220,7 +211,7 @@ client.on('error', winston.error)
 				thumbnail: { url: 'http://i.imgur.com/Jfz6qak.png' }
 			});
 		} else if (message.startsWith(`${prefix}help`)) {
-			msg.channel.sendEmbed({
+			return msg.channel.sendEmbed({
 				description: stripIndents`**LISTEN.moe discord bot by Crawl**
 
 					**Usage:**
@@ -241,16 +232,13 @@ client.on('error', winston.error)
 			const requestedBy = radioJSON.requested_by ? `Requested by: [${radioJSON.requested_by}](https://forum.listen.moe/u/${radioJSON.requested_by})` : '';
 			const song = `${nowplaying}\n\n${anime}\n${requestedBy}`;
 
-			msg.channel.sendEmbed({
+			return msg.channel.sendEmbed({
 				color: 15473237,
-				fields: [
-					{ name: 'Now playing', value: song }
-				]
+				fields: [{ name: 'Now playing', value: song }]
 			});
 		} else if (message.startsWith(`${prefix}eval`)) {
 			if (!config.owners.includes(msg.author.id)) {
-				msg.channel.sendMessage('Only the Botowners can eval, gomen! <(￢0￢)>');
-				return;
+				return msg.channel.sendMessage('Only the Botowners can eval, gomen! <(￢0￢)>');
 			}
 
 			let result;
@@ -261,37 +249,32 @@ client.on('error', winston.error)
 				result = error;
 			}
 
-			msg.channel.sendCode('javascript', result, { split: true });
+			return msg.channel.sendCode('javascript', result, { split: true });
 		} else if (message.startsWith(`${prefix}prefix`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				if (msg.author.id === '83700966167150592') {
-					msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
-					return;
+					return msg.channel.sendMessage('I won\'t do that, tawake. （｀Δ´）！');
 				}
 
-				msg.reply('only a member with manage guild permission can change my prefix, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('only a member with manage guild permission can change my prefix, gomen! <(￢0￢)>');
 			}
 
 			if (msg.content === `${prefix}prefix default`) {
 				winston.info(`PREFIX RESET: "~~" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'prefix');
-				msg.channel.sendMessage(`Prefix resetted to \`~~\` (⌒_⌒;)`);
-				return;
+				return msg.channel.sendMessage(`Prefix resetted to \`~~\` (⌒_⌒;)`);
 			}
 
 			if (/[a-zA-Z0-9\s\n]/.test(msg.content.substr(prefix.length + 7))) {
-				msg.channel.sendMessage('Prefix can\'t be a letter, number, or whitespace character, gomen! <(￢0￢)>');
-				return;
+				return msg.channel.sendMessage('Prefix can\'t be a letter, number, or whitespace character, gomen! <(￢0￢)>');
 			}
 
 			winston.info(`PREFIX CHANGE: "${msg.content.substr(prefix.length + 7)}" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'prefix', msg.content.substr(prefix.length + 7));
-			msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\` (⌒_⌒;)`);
+			return msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\` (⌒_⌒;)`);
 		} else if (message.startsWith(`${prefix}ignore`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
-				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
 			}
 
 			if (msg.content === `${prefix}ignore all`) {
@@ -300,48 +283,41 @@ client.on('error', winston.error)
 				winston.info(`CHANNEL IGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				for (const [key] of channels) ignored.push(key);
 				guilds.set(msg.guild.id, 'ignore', ignored);
-				msg.reply('gotcha! I\'m going to ignore all channels now. (￣▽￣)');
-				return;
+				return msg.reply('gotcha! I\'m going to ignore all channels now. (￣▽￣)');
 			}
 
 			if (ignored.includes(msg.channel.id)) {
-				msg.reply('this channel is already on the ignore list, baka! ｡゜(｀Д´)゜｡');
-				return;
+				return msg.reply('this channel is already on the ignore list, baka! ｡゜(｀Д´)゜｡');
 			}
 
 			ignored.push(msg.channel.id);
 
 			winston.info(`CHANNEL IGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
-			msg.reply('gotcha! I\'m going to ignore this channel now. (￣▽￣)');
+			return msg.reply('gotcha! I\'m going to ignore this channel now. (￣▽￣)');
 		} else if (message.startsWith(`${prefix}unignore`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
-				msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
 			}
 
 			if (typeof ignored === 'undefined') {
-				msg.reply('there are  no channels on the ignore list, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('there are  no channels on the ignore list, gomen! <(￢0￢)>');
 			}
 
 			if (msg.content === `${prefix}unignore all`) {
 				winston.info(`CHANNEL UNIGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'ignore');
-				msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore any channels anymore).');
-				return;
+				return msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore any channels anymore).');
 			}
 
 			if (!ignored.includes(msg.channel.id)) {
-				msg.reply('this channel isn\'t on the ignore list, gomen! <(￢0￢)>');
-				return;
+				return msg.reply('this channel isn\'t on the ignore list, gomen! <(￢0￢)>');
 			}
 
 			if (ignored.length === 1) {
 				winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'ignore');
-				msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
-				return;
+				return msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 			}
 
 			const findIgnored = ignored.indexOf(msg.channel.id);
@@ -352,7 +328,7 @@ client.on('error', winston.error)
 
 			winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
-			msg.reply('I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
+			return msg.reply('I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 		}
 	});
 
