@@ -36,8 +36,10 @@
   "homepage": "https://github.com/WeebDev/listen.moe-discord#readme",
   "dependencies": {
     "bluebird": "^3.4.7",
+    "bufferutil": "^2.0.1",
     "common-tags": "^1.4.0",
-    "discord.js": "WeebDev/discord.js",
+    "discord.js": "weebdev/discord.js",
+    "erlpack": "hammerandchisel/erlpack",
     "node-opus": "^0.2.4",
     "raven": "^1.1.1",
     "sqlite": "^2.3.0",
