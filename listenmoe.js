@@ -89,6 +89,7 @@ client.on('error', winston.error)
 	.on('disconnect', () => {
 		winston.warn('CLIENT: Disconnected!');
 		guilds.destroy();
+		process.exit(1);
 	})
 	.on('guildCreate', guild => {
 		return guild.defaultChannel.sendEmbed({
