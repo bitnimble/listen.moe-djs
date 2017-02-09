@@ -7,6 +7,7 @@ const Raven = require('raven');
 const sqlite = require('sqlite');
 const WebSocket = require('ws');
 const winston = require('winston');
+const request = require('superagent');
 
 const config = require('./config');
 const Guilds = require('./Guilds');
@@ -20,6 +21,7 @@ let guilds;
 let listeners = 0;
 let radioJSON;
 let ws;
+let streaming = false;
 
 sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
 
@@ -51,7 +53,10 @@ function connectWS(info) {
 }
 
 function currentUsersAndGuildsGame() {
-	client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+	if(!streaming)
+		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+	else
+		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
 
 	return setTimeout(currentSongGame, 10000);
 }
@@ -59,7 +64,10 @@ function currentUsersAndGuildsGame() {
 function currentSongGame() {
 	let game = 'loading data...';
 	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	client.user.setGame(game);
+	if(!streaming)
+		client.user.setGame(game);
+	else
+		client.user.setGame(game, 'https://twitch.tv/listen_moe');
 
 	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
@@ -72,6 +80,18 @@ setInterval(() => {
 	} catch (error) {
 		listeners = 0;
 	}
+
+	request
+		.get('https://api.twitch.tv/kraken/streams/?limit=1&channel=listen_moe')
+		.set('Accept', 'application/vnd.twitchtv.v3+json')
+		.set('Client-ID', config.twitchkey)
+		.end((err, res) => {
+			if (err || res.streams === undefined){
+				streaming = false;
+				return;
+			}
+			streaming = true;
+		})
 }, 30000);
 
 client.on('error', winston.error)
