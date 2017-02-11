@@ -23,8 +23,14 @@ class Guilds {
 
 		const rows = await this.db.all('SELECT CAST(guild as TEXT) as guild, settings FROM guilds');
 
-		let currentRow = 0;
+		const statements = await Promise.all([
+			this.db.prepare('INSERT OR REPLACE INTO guilds VALUES(?, ?)'),
+			this.db.prepare('DELETE FROM guilds WHERE guild = ?')
+		]);
+		this.insertOrReplaceStmt = statements[0];
+		this.deleteStmt = statements[1];
 
+		let currentRow = 0;
 		const inverval = setInterval(() => {
 			let settings;
 			try {
@@ -46,13 +52,6 @@ class Guilds {
 
 			if (currentRow === rows.length) clearInterval(inverval);
 		}, 1000);
-
-		const statements = await Promise.all([
-			this.db.prepare('INSERT OR REPLACE INTO guilds VALUES(?, ?)'),
-			this.db.prepare('DELETE FROM guilds WHERE guild = ?')
-		]);
-		this.insertOrReplaceStmt = statements[0];
-		this.deleteStmt = statements[1];
 
 		this.listeners
 			.set('guildCreate', guild => {
