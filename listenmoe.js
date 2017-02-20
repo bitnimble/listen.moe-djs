@@ -64,7 +64,7 @@ const streamCheck = setInterval(() => {
 	request
 		.get('https://api.twitch.tv/kraken/streams/?limit=1&channel=listen_moe')
 		.set('Accept', 'application/vnd.twitchtv.v3+json')
-		.set('Client-ID', config.twitchkey)
+		.set('Client-ID', config.twitchClientID)
 		.end((err, res) => {
 			if (err || !res.streams) {
 				return streaming = false; // eslint-disable-line no-return-assign
