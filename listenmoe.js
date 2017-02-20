@@ -7,6 +7,7 @@ const Raven = require('raven');
 const sqlite = require('sqlite');
 const WebSocket = require('ws');
 const winston = require('winston');
+const request = require('superagent');
 
 const config = require('./config');
 const Guilds = require('./Guilds');
@@ -20,6 +21,7 @@ let guilds;
 let listeners = 0;
 let radioJSON;
 let ws;
+let streaming = false;
 
 sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
 
@@ -50,21 +52,7 @@ function connectWS(info) {
 	ws.on('error', winston.error);
 }
 
-function currentUsersAndGuildsGame() {
-	client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
-
-	return setTimeout(currentSongGame, 10000);
-}
-
-function currentSongGame() {
-	let game = 'loading data...';
-	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	client.user.setGame(game);
-
-	return setTimeout(currentUsersAndGuildsGame, 20000);
-}
-
-setInterval(() => {
+const streamCheck = setInterval(() => {
 	try {
 		listeners = client.voiceConnections
 			.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
@@ -72,7 +60,34 @@ setInterval(() => {
 	} catch (error) {
 		listeners = 0;
 	}
+
+	request
+		.get('https://api.twitch.tv/kraken/streams/?limit=1&channel=listen_moe')
+		.set('Accept', 'application/vnd.twitchtv.v3+json')
+		.set('Client-ID', config.twitchkey)
+		.end((err, res) => {
+			if (err || !res.streams) {
+				return streaming = false; // eslint-disable-line no-return-assign
+			}
+			return streaming = true; // eslint-disable-line no-return-assign
+		});
 }, 30000);
+
+function currentUsersAndGuildsGame() {
+	if (!streaming) client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+	else client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
+
+	return setTimeout(currentSongGame, 10000);
+}
+
+function currentSongGame() {
+	let game = 'loading data...';
+	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
+	if (!streaming) client.user.setGame(game);
+	else client.user.setGame(game, 'https://twitch.tv/listen_moe');
+
+	return setTimeout(currentUsersAndGuildsGame, 20000);
+}
 
 client.on('error', winston.error)
 	.on('warn', winston.warn)
@@ -88,6 +103,7 @@ client.on('error', winston.error)
 	})
 	.on('disconnect', () => {
 		winston.warn('CLIENT: Disconnected!');
+		clearInterval(streamCheck);
 		guilds.destroy();
 		process.exit(1);
 	})
