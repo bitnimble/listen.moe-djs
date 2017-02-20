@@ -66,25 +66,23 @@ const streamCheck = setInterval(() => {
 		.set('Accept', 'application/vnd.twitchtv.v3+json')
 		.set('Client-ID', config.twitchClientID)
 		.end((err, res) => {
-			if (err || !res.streams) {
-				return streaming = false; // eslint-disable-line no-return-assign
-			}
-			return streaming = true; // eslint-disable-line no-return-assign
+			if (err || !res.streams) streaming = false;
+			else streaming = true;
 		});
 }, 30000);
 
 function currentUsersAndGuildsGame() {
-	if (!streaming) client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
-	else client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
+	if (streaming) client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
+	else client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
 
 	return setTimeout(currentSongGame, 10000);
 }
 
 function currentSongGame() {
-	let game = 'loading data...';
+	let game = 'Loading data...';
 	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	if (!streaming) client.user.setGame(game);
-	else client.user.setGame(game, 'https://twitch.tv/listen_moe');
+	if (streaming) client.user.setGame(game, 'https://twitch.tv/listen_moe');
+	else client.user.setGame(game);
 
 	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
@@ -116,9 +114,14 @@ client.on('error', winston.error)
 				Keep in mind that you need to have the \`Manage Server\` permission to use this command.
 
 				**Commands:**
-				**\\~~join**: Joins the voice channel you are currently in.
-				**\\~~leave**: Leaves the voice channel the bot is currently in.
-				**\\~~np**: Displays the currently playing song.
+				**\\~~join**: Type this while in a voice channel to have the bot join that channel and start playing there. Limited to users with the "manage server" permission.
+				**\\~~leave**: Makes the bot leave the voice channel it's currently in.
+				**\\~~np**: Gets the currently playing song and artist. If the song was requested by someone, also gives their name.
+				**\\~~ignore**: Ignores commands in the current channel. Admin commands are exempt from the ignore.
+				**\\~~unignore**: Unignores commands in the current channel.
+				**\\~~ignore all**: Ignores commands in all channels on the guild.
+				**\\~~unignore all**: Unignores all channels on the guild.
+				**\\~~prefix !** Changes the bot's prefix for this server. Prefixes cannot contain whitespace, letters, or numbers - anything else is fair game. It's recommended that you stick with the default prefix of ~~, but this command is provided in case you find conflicts with other bots.
 
 				For additional commands and help, please visit [Github](https://github.com/WeebDev/listen.moe-discord)`,
 			color: 15473237
