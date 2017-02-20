@@ -52,27 +52,7 @@ function connectWS(info) {
 	ws.on('error', winston.error);
 }
 
-function currentUsersAndGuildsGame() {
-	if(!streaming)
-		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
-	else
-		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
-
-	return setTimeout(currentSongGame, 10000);
-}
-
-function currentSongGame() {
-	let game = 'loading data...';
-	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	if(!streaming)
-		client.user.setGame(game);
-	else
-		client.user.setGame(game, 'https://twitch.tv/listen_moe');
-
-	return setTimeout(currentUsersAndGuildsGame, 20000);
-}
-
-setInterval(() => {
+const streamCheck = setInterval(() => {
 	try {
 		listeners = client.voiceConnections
 			.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
@@ -86,13 +66,28 @@ setInterval(() => {
 		.set('Accept', 'application/vnd.twitchtv.v3+json')
 		.set('Client-ID', config.twitchkey)
 		.end((err, res) => {
-			if (err || res.streams === undefined){
-				streaming = false;
-				return;
+			if (err || !res.streams) {
+				return streaming = false; // eslint-disable-line no-return-assign
 			}
-			streaming = true;
-		})
+			return streaming = true; // eslint-disable-line no-return-assign
+		});
 }, 30000);
+
+function currentUsersAndGuildsGame() {
+	if (!streaming) client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+	else client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
+
+	return setTimeout(currentSongGame, 10000);
+}
+
+function currentSongGame() {
+	let game = 'loading data...';
+	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
+	if (!streaming) client.user.setGame(game);
+	else client.user.setGame(game, 'https://twitch.tv/listen_moe');
+
+	return setTimeout(currentUsersAndGuildsGame, 20000);
+}
 
 client.on('error', winston.error)
 	.on('warn', winston.warn)
@@ -108,6 +103,7 @@ client.on('error', winston.error)
 	})
 	.on('disconnect', () => {
 		winston.warn('CLIENT: Disconnected!');
+		clearInterval(streamCheck);
 		guilds.destroy();
 		process.exit(1);
 	})
