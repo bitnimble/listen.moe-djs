@@ -66,14 +66,24 @@ const streamCheck = setInterval(() => {
 		.set('Accept', 'application/vnd.twitchtv.v3+json')
 		.set('Client-ID', config.twitchClientID)
 		.end((err, res) => {
-			if (err || !res.streams) streaming = false;
-			else streaming = true;
+			if (err || !res.streams) {
+				winston.info('TWITCH: Setting streaming to FALSE.');
+				streaming = false;
+			} else {
+				winston.info('TWITCH: Setting streaming to TRUE.');
+				streaming = true;
+			}
 		});
 }, 30000);
 
 function currentUsersAndGuildsGame() {
-	if (streaming) client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
-	else client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+	if (streaming) {
+		winston.info('PLAYING GAME: Setting playing game WITH streaming!');
+		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
+	} else {
+		winston.info('PLAYING GAME: Setting playing game WITHOUT streaming!');
+		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
+	}
 
 	return setTimeout(currentSongGame, 10000);
 }
@@ -81,8 +91,13 @@ function currentUsersAndGuildsGame() {
 function currentSongGame() {
 	let game = 'Loading data...';
 	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	if (streaming) client.user.setGame(game, 'https://twitch.tv/listen_moe');
-	else client.user.setGame(game);
+	if (streaming) {
+		winston.info('PLAYING GAME: Setting playing game WITH streaming!');
+		client.user.setGame(game, 'https://twitch.tv/listen_moe');
+	} else {
+		winston.info('PLAYING GAME: Setting playing game WITHOUT streaming!');
+		client.user.setGame(game);
+	}
 
 	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
