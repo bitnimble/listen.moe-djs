@@ -3,7 +3,6 @@ global.Promise = require('bluebird');
 const Discord = require('discord.js');
 const { oneLine, stripIndents } = require('common-tags');
 const path = require('path');
-const Raven = require('raven');
 const sqlite = require('sqlite');
 const WebSocket = require('ws');
 const winston = require('winston');
