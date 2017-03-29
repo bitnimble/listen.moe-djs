@@ -7,5 +7,5 @@
         "User ID who should have access to eval",
         "You can put multiples here"
     ],
-    "ravenKey": "Just leave this as is if you dont use Sentry and comment out the Raven.install() and Raven.config(config.ravenKey)"
+    "twitchClientID": ""
 }

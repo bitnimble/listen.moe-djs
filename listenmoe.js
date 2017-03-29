@@ -25,9 +25,6 @@ let streaming = false;
 
 sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
 
-Raven.config(config.ravenKey);
-Raven.install();
-
 function connectWS(info) {
 	if (ws) ws.removeAllListeners();
 	try {

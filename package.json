@@ -16,8 +16,7 @@
     }
   ],
   "scripts": {
-    "start": "",
-    "test": "eslint ."
+    "test": "eslint . silent"
   },
   "repository": {
     "type": "git",
@@ -35,18 +34,21 @@
   ],
   "homepage": "https://github.com/WeebDev/listen.moe-discord#readme",
   "dependencies": {
-    "bluebird": "^3.4.7",
-    "bufferutil": "^2.0.1",
+    "bluebird": "^3.5.0",
+    "bufferutil": "^3.0.0",
     "common-tags": "^1.4.0",
     "discord.js": "weebdev/discord.js",
     "erlpack": "hammerandchisel/erlpack",
     "node-opus": "^0.2.4",
-    "raven": "^1.1.2",
-    "sqlite": "^2.3.0",
+    "sqlite": "^2.5.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
-    "eslint": "^3.16.0"
+    "eslint": "^3.18.0",
+    "eslint-config-aqua": "^1.1.0"
+  },
+  "eslintConfig": {
+    "extends": "aqua"
   },
   "engines": {
     "node": ">=7.6.0"
