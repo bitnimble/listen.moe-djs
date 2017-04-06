@@ -73,43 +73,25 @@ const streamCheck = setInterval(() => {
 		.set('Accept', 'application/vnd.twitchtv.v3+json')
 		.set('Client-ID', config.twitchClientID)
 		.end((err, res) => {
-			if (err || !res.streams) {
-				winston.info(`[SHARD: ${client.shard.id}] TWITCH: Setting streaming to FALSE.`);
-				streaming = false;
-			} else {
-				winston.info(`[SHARD: ${client.shard.id}] TWITCH: Setting streaming to TRUE.`);
-				streaming = true;
-			}
+			if (err || !res.streams) streaming = false;
+			else streaming = true;
 		});
 }, 30000);
 
 function currentUsersAndGuildsGame() {
 	client.shard.fetchClientValues('guilds.size').then(results => {
 		const guildsAmount = results.reduce((prev, next) => prev + next, 0);
-
-		if (streaming) {
-			winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITH streaming!`);
-			client.user.setGame(`for ${listeners} on ${guildsAmount} servers`, 'https://twitch.tv/listen_moe');
-		} else {
-			winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITHOUT streaming!`);
-			client.user.setGame(`for ${listeners} on ${guildsAmount} servers`);
-		}
+		if (streaming) client.user.setGame(`for ${listeners} on ${guildsAmount} servers`, 'https://twitch.tv/listen_moe');
+		else client.user.setGame(`for ${listeners} on ${guildsAmount} servers`);
 	});
-
 	return setTimeout(currentSongGame, 10000);
 }
 
 function currentSongGame() {
 	let game = 'Loading data...';
 	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	if (streaming) {
-		winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITH streaming!`);
-		client.user.setGame(game, 'https://twitch.tv/listen_moe');
-	} else {
-		winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITHOUT streaming!`);
-		client.user.setGame(game);
-	}
-
+	if (streaming) client.user.setGame(game, 'https://twitch.tv/listen_moe');
+	else client.user.setGame(game);
 	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
 
@@ -122,17 +104,17 @@ client.on('error', winston.error)
 			${client.user.username}#${client.user.discriminator} (ID: ${client.user.id})
 			This shard is currently in ${client.guilds.size} servers.
 		`);
-		guilds.startup();
 		connectWS(config.streamInfo);
 		currentUsersAndGuildsGame();
+		guilds.startup();
 	})
 	.on('disconnect', () => {
 		winston.warn(`[SHARD: ${client.shard.id}] CLIENT: Disconnected!`);
 		clearInterval(streamCheck);
 		guilds.destroy();
 	})
-	.on('guildCreate', guild => {
-		return guild.defaultChannel.sendEmbed({
+	.on('guildCreate', guild =>
+		guild.defaultChannel.sendEmbed({
 			description: stripIndents`**LISTEN.moe discord bot by Crawl**
 
 				**Usage:**
@@ -151,8 +133,8 @@ client.on('error', winston.error)
 
 				For additional commands and help, please visit [Github](https://github.com/WeebDev/listen.moe-discord)`,
 			color: 15473237
-		});
-	})
+		})
+	)
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	/* eslint-disable consistent-return */
 	.on('message', async msg => { // eslint-disable-line complexity
