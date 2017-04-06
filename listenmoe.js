@@ -7,6 +7,7 @@ const sqlite = require('sqlite');
 const WebSocket = require('ws');
 const winston = require('winston');
 const request = require('superagent');
+const https = require('https');
 
 const config = require('./config');
 const Guilds = require('./Guilds');
@@ -16,6 +17,7 @@ const client = new Discord.Client({
 	messageCacheMaxSize: 1
 });
 
+let stream;
 let guilds;
 let listeners = 0;
 let radioJSON;
@@ -23,6 +25,12 @@ let ws;
 let streaming = false;
 
 sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
+
+function getStream() {
+	return new Promise(resolve => https.get(config.stream, res => resolve(res))
+		.on('error', () => process.exit(1)));
+}
+getStream().then(res => stream = res);
 
 function connectWS(info) {
 	if (ws) ws.removeAllListeners();
@@ -183,7 +191,7 @@ client.on('error', winston.error)
 			const voiceChannel = msg.member.voiceChannel;
 
 			guilds.set(msg.guild.id, 'voiceChannel', voiceChannel.id);
-			guilds.joinVoice(msg.guild, voiceChannel);
+			guilds.joinVoice(msg.guild, voiceChannel, stream);
 			return msg.channel.sendMessage(`Streaming to your server now, ${msg.author}-san! (* ^ ω ^)`);
 		} else if (message.startsWith(`${prefix}leave`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {

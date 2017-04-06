@@ -1,14 +1,4 @@
-const request = require('https');
 const winston = require('winston');
-
-const config = require('./config');
-
-let stream;
-function getStream() {
-	return new Promise(resolve => request.get(config.stream, res => resolve(res))
-		.on('error', () => process.exit(1)));
-}
-getStream().then(res => stream = res);
 
 class Guilds {
 	constructor(db, client) {
@@ -124,7 +114,7 @@ class Guilds {
 		}
 	}
 
-	joinVoice(guild, voiceChannel) {
+	joinVoice(guild, voiceChannel, stream) {
 		voiceChannel.join({ shared: true }).then(async vc => {
 			winston.info(`[SHARD: ${this.client.shard.id}] ADDED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			vc.playSharedStream('listen.moe', stream);
