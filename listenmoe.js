@@ -122,7 +122,6 @@ client.on('error', winston.error)
 		winston.warn(`[SHARD: ${client.shard.id}] CLIENT: Disconnected!`);
 		clearInterval(streamCheck);
 		guilds.destroy();
-		process.exit(1);
 	})
 	.on('guildCreate', guild => {
 		return guild.defaultChannel.sendEmbed({
