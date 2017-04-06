@@ -23,6 +23,7 @@ let listeners = 0;
 let radioJSON;
 let ws;
 let streaming = false;
+let customStream = false;
 
 sqlite.open(path.join(__dirname, 'settings.db')).then(db => guilds = new Guilds(db, client)); // eslint-disable-line no-return-assign
 
@@ -79,19 +80,23 @@ const streamCheck = setInterval(() => {
 }, 30000);
 
 function currentUsersAndGuildsGame() {
-	client.shard.fetchClientValues('guilds.size').then(results => {
-		const guildsAmount = results.reduce((prev, next) => prev + next, 0);
-		if (streaming) client.user.setGame(`for ${listeners} on ${guildsAmount} servers`, 'https://twitch.tv/listen_moe');
-		else client.user.setGame(`for ${listeners} on ${guildsAmount} servers`);
-	});
+	if (!customStream) {
+		client.shard.fetchClientValues('guilds.size').then(results => {
+			const guildsAmount = results.reduce((prev, next) => prev + next, 0);
+			if (streaming) client.user.setGame(`for ${listeners} on ${guildsAmount} servers`, 'https://twitch.tv/listen_moe');
+			else client.user.setGame(`for ${listeners} on ${guildsAmount} servers`);
+		});
+	}
 	return setTimeout(currentSongGame, 10000);
 }
 
 function currentSongGame() {
-	let game = 'Loading data...';
-	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
-	if (streaming) client.user.setGame(game, 'https://twitch.tv/listen_moe');
-	else client.user.setGame(game);
+	if (!customStream) {
+		let game = 'Loading data...';
+		if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
+		if (streaming) client.user.setGame(game, 'https://twitch.tv/listen_moe');
+		else client.user.setGame(game);
+	}
 	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
 
@@ -283,6 +288,22 @@ client.on('error', winston.error)
 			}
 
 			return msg.channel.sendCode('javascript', result, { split: true });
+		} else if (message.startsWith(`${prefix}stream`)) {
+			if (!config.owners.includes(msg.author.id)) {
+				return msg.channel.sendMessage('Only the Botowners can use this, gomen! <(￢0￢)>');
+			}
+
+			if (message === `${prefix}stream disable` || message === `${prefix}stream`) {
+				customStream = false;
+				winston.info(`[SHARD: ${client.shard.id}] CUSTOM STREAMING MESSAGE REMOVED`);
+				return msg.channel.sendMessage('Disabled the custom streaming message.');
+			}
+
+			const streamingMessage = msg.content.substr(prefix.length + 7);
+			customStream = true;
+			winston.info(`[SHARD: ${client.shard.id}] CUSTOM STREAMING MESSAGE SET TO "${streamingMessage}"`);
+			client.user.setGame(streamingMessage, 'https://twitch.tv/listen_moe');
+			return msg.channel.sendMessage(`Custom streaming message set to "${streamingMessage}".`);
 		} else if (message.startsWith(`${prefix}prefix`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				if (msg.author.id === '83700966167150592') {
