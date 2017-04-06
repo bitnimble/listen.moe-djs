@@ -10,7 +10,7 @@ class Guilds {
 		this.deleteStmt = null;
 	}
 
-	async startup() {
+	async startup(stream) {
 		await this.db.run('CREATE TABLE IF NOT EXISTS guilds (guild INTEGER PRIMARY KEY, settings TEXT)');
 
 		const rows = await this.db.all('SELECT CAST(guild as TEXT) as guild, settings FROM guilds');
@@ -40,7 +40,7 @@ class Guilds {
 			if (!this.client.guilds.has(guild)) continue;
 
 			this.settings.set(guild, settings);
-			this.setupGuild(guild, settings);
+			this.setupGuild(guild, settings, stream);
 
 			await new Promise(r => setTimeout(r, 1000));
 		}
@@ -49,7 +49,7 @@ class Guilds {
 			.set('guildCreate', guild => {
 				const settings = this.settings.get(guild.id);
 				if (!settings) return;
-				this.setupGuild(guild.id, settings);
+				this.setupGuild(guild.id, settings, stream);
 			});
 
 		for (const [event, listener] of this.listeners) this.client.on(event, listener);
@@ -101,7 +101,7 @@ class Guilds {
 		await this.deleteStmt.run(guild);
 	}
 
-	setupGuild(guild, settings) {
+	setupGuild(guild, settings, stream) {
 		if (typeof guild !== 'string') throw new TypeError('The guild must be a guild ID.');
 		guild = this.client.guilds.get(guild);
 
@@ -110,7 +110,7 @@ class Guilds {
 			const voiceChannel = guild.channels.get(settings.voiceChannel);
 			if (!voiceChannel) return;
 
-			this.joinVoice(guild, voiceChannel);
+			this.joinVoice(guild, voiceChannel, stream);
 		}
 	}
 
