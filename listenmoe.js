@@ -106,7 +106,7 @@ client.on('error', winston.error)
 		`);
 		connectWS(config.streamInfo);
 		currentUsersAndGuildsGame();
-		guilds.startup();
+		guilds.startup(stream);
 	})
 	.on('disconnect', () => {
 		winston.warn(`[SHARD: ${client.shard.id}] CLIENT: Disconnected!`);
