@@ -28,10 +28,10 @@ function connectWS(info) {
 	if (ws) ws.removeAllListeners();
 	try {
 		ws = new WebSocket(info);
-		winston.info('WEBSOCKET: Connection A-OK!');
+		winston.info(`[SHARD: ${client.shard.id}] WEBSOCKET: Connection A-OK!`);
 	} catch (error) {
-		setTimeout(() => { return connectWS(info); }, 3000);
-		winston.warn('WEBSOCKET: Couldn\'t connect, reconnecting...');
+		setTimeout(() => connectWS(info), 3000);
+		winston.warn(`[SHARD: ${client.shard.id}] WEBSOCKET: Couldn't connect, reconnecting...`);
 	}
 
 	ws.on('message', data => {
@@ -42,20 +42,23 @@ function connectWS(info) {
 		}
 	});
 	ws.on('close', () => {
-		setTimeout(() => { return connectWS(info); }, 3000);
-		winston.warn('WEBSOCKET: Connection closed, reconnecting...');
+		setTimeout(() => connectWS(info), 3000);
+		winston.warn(`[SHARD: ${client.shard.id}] WEBSOCKET: Connection closed, reconnecting...`);
 	});
 	ws.on('error', winston.error);
 }
 
 const streamCheck = setInterval(() => {
-	try {
-		listeners = client.voiceConnections
+	client.shard.broadcastEval(`
+		this.voiceConnections
 			.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
-			.reduce((sum, members) => sum + members);
-	} catch (error) {
-		listeners = 0;
-	}
+			.reduce((sum, members) => sum + members, 0);
+	`)
+		.then(results => listeners = results.reduce((prev, next) => prev + next, 0))
+		.catch(error => {
+			winston.error(error);
+			listeners = 0;
+		});
 
 	request
 		.get('https://api.twitch.tv/kraken/streams/?limit=1&channel=listen_moe')
@@ -63,23 +66,27 @@ const streamCheck = setInterval(() => {
 		.set('Client-ID', config.twitchClientID)
 		.end((err, res) => {
 			if (err || !res.streams) {
-				winston.info('TWITCH: Setting streaming to FALSE.');
+				winston.info(`[SHARD: ${client.shard.id}] TWITCH: Setting streaming to FALSE.`);
 				streaming = false;
 			} else {
-				winston.info('TWITCH: Setting streaming to TRUE.');
+				winston.info(`[SHARD: ${client.shard.id}] TWITCH: Setting streaming to TRUE.`);
 				streaming = true;
 			}
 		});
 }, 30000);
 
 function currentUsersAndGuildsGame() {
-	if (streaming) {
-		winston.info('PLAYING GAME: Setting playing game WITH streaming!');
-		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`, 'https://twitch.tv/listen_moe');
-	} else {
-		winston.info('PLAYING GAME: Setting playing game WITHOUT streaming!');
-		client.user.setGame(`for ${listeners} on ${client.guilds.size} servers`);
-	}
+	client.shard.fetchClientValues('guilds.size').then(results => {
+		const guildsAmount = results.reduce((prev, next) => prev + next, 0);
+
+		if (streaming) {
+			winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITH streaming!`);
+			client.user.setGame(`for ${listeners} on ${guildsAmount} servers`, 'https://twitch.tv/listen_moe');
+		} else {
+			winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITHOUT streaming!`);
+			client.user.setGame(`for ${listeners} on ${guildsAmount} servers`);
+		}
+	});
 
 	return setTimeout(currentSongGame, 10000);
 }
@@ -88,10 +95,10 @@ function currentSongGame() {
 	let game = 'Loading data...';
 	if (radioJSON !== {}) game = `${radioJSON.artist_name} - ${radioJSON.song_name}`;
 	if (streaming) {
-		winston.info('PLAYING GAME: Setting playing game WITH streaming!');
+		winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITH streaming!`);
 		client.user.setGame(game, 'https://twitch.tv/listen_moe');
 	} else {
-		winston.info('PLAYING GAME: Setting playing game WITHOUT streaming!');
+		winston.info(`[SHARD: ${client.shard.id}] PLAYING GAME: Setting playing game WITHOUT streaming!`);
 		client.user.setGame(game);
 	}
 
@@ -102,16 +109,17 @@ client.on('error', winston.error)
 	.on('warn', winston.warn)
 	.on('ready', () => {
 		winston.info(oneLine`
-			CLIENT: Listen.moe ready!
+			[SHARD: ${client.shard.id}]
+			CLIENT: Ready!
 			${client.user.username}#${client.user.discriminator} (ID: ${client.user.id})
-			Currently in ${client.guilds.size} servers.
+			This shard is currently in ${client.guilds.size} servers.
 		`);
 		guilds.startup();
 		connectWS(config.streamInfo);
 		currentUsersAndGuildsGame();
 	})
 	.on('disconnect', () => {
-		winston.warn('CLIENT: Disconnected!');
+		winston.warn(`[SHARD: ${client.shard.id}] CLIENT: Disconnected!`);
 		clearInterval(streamCheck);
 		guilds.destroy();
 		process.exit(1);
@@ -140,7 +148,7 @@ client.on('error', winston.error)
 	})
 	.on('guildDelete', guild => { guilds.clear(guild.id); })
 	/* eslint-disable consistent-return */
-	.on('message', msg => { // eslint-disable-line complexity
+	.on('message', async msg => { // eslint-disable-line complexity
 		if (msg.channel.type === 'dm') return;
 		if (msg.author.bot) return;
 		const prefix = guilds.get(msg.guild.id, 'prefix', '~~');
@@ -165,7 +173,7 @@ client.on('error', winston.error)
 				return msg.reply('only a member with manage guild permission can add me to a voice channel, gomen! <(￢0￢)>');
 			}
 
-			if (client.voiceConnections.get(msg.guild.id)) {
+			if (msg.guild.voiceConnection) {
 				return msg.reply('I am already in a voice channel here, baka! ｡゜(｀Д´)゜｡');
 			}
 
@@ -173,7 +181,7 @@ client.on('error', winston.error)
 				return msg.reply('you have to be in a voice channel to add me, baka! ｡゜(｀Д´)゜｡');
 			}
 
-			const voiceChannel = msg.guild.channels.get(msg.member.voiceChannel.id);
+			const voiceChannel = msg.member.voiceChannel;
 
 			guilds.set(msg.guild.id, 'voiceChannel', voiceChannel.id);
 			guilds.joinVoice(msg.guild, voiceChannel);
@@ -187,7 +195,7 @@ client.on('error', winston.error)
 				return msg.reply('only a member with manage guild permission can remove me from a voice channel, gomen! <(￢0￢)>');
 			}
 
-			if (!client.voiceConnections.get(msg.guild.id)) {
+			if (!msg.guild.voiceConnection) {
 				return msg.reply('you didn\'t add me to a voice channel yet, baka! ｡゜(｀Д´)゜｡');
 			}
 
@@ -195,7 +203,7 @@ client.on('error', winston.error)
 				return msg.reply('you have to be in a voice channel to remove me, baka! ｡゜(｀Д´)゜｡');
 			}
 
-			const voiceChannel = client.voiceConnections.get(msg.guild.id);
+			const voiceChannel = msg.voiceConnection;
 
 			guilds.remove(msg.guild.id, 'voiceChannel');
 			guilds.leaveVoice(msg.guild, voiceChannel);
@@ -209,14 +217,18 @@ client.on('error', winston.error)
 				return msg.channel.sendMessage('Only the Botowners can view stats, gomen! 	<(￢0￢)>');
 			}
 
-			let users;
 			try {
-				users = client.voiceConnections
-					.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
-					.reduce((sum, members) => sum + members);
+				listeners = (await client.shard.broadcastEval(`
+					this.voiceConnections
+						.map(vc => vc.channel.members.filter(me => !(me.user.bot || me.selfDeaf || me.deaf)).size)
+						.reduce((sum, members) => sum + members, 0);
+				`)).reduce((prev, next) => prev + next);
 			} catch (error) {
-				users = 0;
+				listeners = 0;
 			}
+
+			const guildsAmount = (await client.shard.fetchClientValues('guilds.size')).reduce((prev, next) => prev + next, 0);
+			const voiceConnectionsAmount = (await client.shard.fetchClientValues('voiceConnections.size')).reduce((prev, next) => prev + next, 0);
 
 			const nowplaying = `${radioJSON.artist_name ? `${radioJSON.artist_name} - ` : ''}${radioJSON.song_name}`;
 			const anime = radioJSON.anime_name ? `Anime: ${radioJSON.anime_name}` : '';
@@ -234,9 +246,9 @@ client.on('error', winston.error)
 				fields: [
 					{ name: 'Now playing', value: song },
 					{ name: 'Radio Listeners', value: radioJSON.listeners, inline: true },
-					{ name: 'Discord Listeners', value: users, inline: true },
-					{ name: 'Servers', value: client.guilds.size, inline: true },
-					{ name: 'Voice Channels', value: client.voiceConnections.size, inline: true }
+					{ name: 'Discord Listeners', value: listeners, inline: true },
+					{ name: 'Servers', value: guildsAmount, inline: true },
+					{ name: 'Voice Channels', value: voiceConnectionsAmount, inline: true }
 				],
 				timestamp: new Date(),
 				thumbnail: { url: 'http://i.imgur.com/Jfz6qak.png' }
@@ -274,7 +286,7 @@ client.on('error', winston.error)
 
 			let result;
 			try {
-				winston.info(`EVAL: ${msg.content.substr(prefix.length + 5)} FROM ${msg.author.username}`);
+				winston.info(`[SHARD: ${client.shard.id}] EVAL: ${msg.content.substr(prefix.length + 5)} FROM ${msg.author.username}`);
 				result = eval(msg.content.substr(prefix.length + 5));
 			} catch (error) {
 				result = error;
@@ -291,7 +303,7 @@ client.on('error', winston.error)
 			}
 
 			if (msg.content === `${prefix}prefix default`) {
-				winston.info(`PREFIX RESET: "~~" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				winston.info(`[SHARD: ${client.shard.id}] PREFIX RESET: "~~" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'prefix');
 				return msg.channel.sendMessage(`Prefix resetted to \`~~\` (⌒_⌒;)`);
 			}
@@ -300,7 +312,7 @@ client.on('error', winston.error)
 				return msg.channel.sendMessage('Prefix can\'t be a letter, number, or whitespace character, gomen! <(￢0￢)>');
 			}
 
-			winston.info(`PREFIX CHANGE: "${msg.content.substr(prefix.length + 7)}" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+			winston.info(`[SHARD: ${client.shard.id}] PREFIX CHANGE: "${msg.content.substr(prefix.length + 7)}" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'prefix', msg.content.substr(prefix.length + 7));
 			return msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\` (⌒_⌒;)`);
 		} else if (message.startsWith(`${prefix}ignore`)) {
@@ -311,7 +323,7 @@ client.on('error', winston.error)
 			if (msg.content === `${prefix}ignore all`) {
 				const channels = msg.guild.channels;
 
-				winston.info(`CHANNEL IGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				winston.info(`[SHARD: ${client.shard.id}] CHANNEL IGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				for (const [key] of channels) ignored.push(key);
 				guilds.set(msg.guild.id, 'ignore', ignored);
 				return msg.reply('gotcha! I\'m going to ignore all channels now. (￣▽￣)');
@@ -323,7 +335,7 @@ client.on('error', winston.error)
 
 			ignored.push(msg.channel.id);
 
-			winston.info(`CHANNEL IGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+			winston.info(`[SHARD: ${client.shard.id}] CHANNEL IGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
 			return msg.reply('gotcha! I\'m going to ignore this channel now. (￣▽￣)');
 		} else if (message.startsWith(`${prefix}unignore`)) {
@@ -336,7 +348,7 @@ client.on('error', winston.error)
 			}
 
 			if (msg.content === `${prefix}unignore all`) {
-				winston.info(`CHANNEL UNIGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				winston.info(`[SHARD: ${client.shard.id}] CHANNEL UNIGNORE: All channels ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'ignore');
 				return msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore any channels anymore).');
 			}
@@ -346,7 +358,7 @@ client.on('error', winston.error)
 			}
 
 			if (ignored.length === 1) {
-				winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+				winston.info(`[SHARD: ${client.shard.id}] CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 				guilds.remove(msg.guild.id, 'ignore');
 				return msg.reply('gotcha! I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 			}
@@ -357,14 +369,14 @@ client.on('error', winston.error)
 				ignored.splice(findIgnored, 1);
 			}
 
-			winston.info(`CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
+			winston.info(`[SHARD: ${client.shard.id}] CHANNEL UNIGNORE: (${msg.channel.id}) ON GUILD ${msg.guild.name} (${msg.guild.id})`);
 			guilds.set(msg.guild.id, 'ignore', ignored);
 			return msg.reply('I\'m baaack!  ＼(≧▽≦)／ (not going to ignore this channel anymore).');
 		}
 	});
 
-client.login(config.token);
+client.login();
 
 process.on('unhandledRejection', err => {
-	winston.error(`Uncaught Promise Error:\n${err.stack}`);
+	winston.error(`[SHARD: ${client.shard.id}] Uncaught Promise Error:\n${err.stack}`);
 });

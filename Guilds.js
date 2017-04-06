@@ -2,11 +2,13 @@ const request = require('https');
 const winston = require('winston');
 
 const config = require('./config');
+
 let stream;
-request.get(config.stream, res => stream = res) // eslint-disable-line no-return-assign
-	.once('error', () => {
-		process.exit(1);
-	});
+function getStream() {
+	return new Promise(resolve => request.get(config.stream, res => resolve(res))
+		.on('error', () => process.exit(1)));
+}
+getStream().then(res => stream = res);
 
 class Guilds {
 	constructor(db, client) {
@@ -30,28 +32,28 @@ class Guilds {
 		this.insertOrReplaceStmt = statements[0];
 		this.deleteStmt = statements[1];
 
-		let currentRow = 0;
-		const inverval = setInterval(() => {
+		for (const { settings: settingsStr, guild } of rows) {
 			let settings;
 			try {
-				settings = JSON.parse(rows[currentRow].settings);
+				settings = JSON.parse(settingsStr);
 			} catch (error) {
-				return;
+				continue;
 			}
 
-			const guild = rows[currentRow].guild;
-			if (!this.client.guilds.has(guild)) {
-				this.clear(guild.id);
-				currentRow++;
-				return;
+			const allGuildIDs = (await this.client.shard.broadcastEval('this.guilds.keyArray()')).reduce((prev, next) => prev.concat(next));
+
+			if (!allGuildIDs.includes(guild)) {
+				this.clear(guild);
+				continue;
 			}
+
+			if (!this.client.guilds.has(guild)) continue;
+
 			this.settings.set(guild, settings);
 			this.setupGuild(guild, settings);
 
-			currentRow++;
-
-			if (currentRow === rows.length) clearInterval(inverval);
-		}, 1000);
+			await new Promise(r => setTimeout(r, 1000));
+		}
 
 		this.listeners
 			.set('guildCreate', guild => {
@@ -123,17 +125,17 @@ class Guilds {
 	}
 
 	joinVoice(guild, voiceChannel) {
-		voiceChannel.join({ shared: true }).then(vc => {
-			winston.info(`ADDED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
+		voiceChannel.join({ shared: true }).then(async vc => {
+			winston.info(`[SHARD: ${this.client.shard.id}] ADDED VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			vc.playSharedStream('listen.moe', stream);
 		}).catch(error => {
-			winston.error(`ERROR VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
+			winston.error(`[SHARD: ${this.client.shard.id}] ERROR VOICE CONNECTION: (${voiceChannel.id}) for guild ${guild.name} (${guild.id})`);
 			winston.error(error.message);
 		});
 	}
 
 	leaveVoice(guild, voiceChannel) {
-		winston.info(`REMOVED VOICE CONNECTION: For guild ${guild.name} (${guild.id})`);
+		winston.info(`[SHARD: ${this.client.shard.id}] REMOVED VOICE CONNECTION: For guild ${guild.name} (${guild.id})`);
 		voiceChannel.leaveSharedStream();
 		voiceChannel.disconnect();
 	}
