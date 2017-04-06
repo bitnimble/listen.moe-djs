@@ -203,7 +203,7 @@ client.on('error', winston.error)
 				return msg.reply('you have to be in a voice channel to remove me, baka! ｡゜(｀Д´)゜｡');
 			}
 
-			const voiceChannel = msg.voiceConnection;
+			const voiceChannel = msg.guild.voiceConnection;
 
 			guilds.remove(msg.guild.id, 'voiceChannel');
 			guilds.leaveVoice(msg.guild, voiceChannel);
