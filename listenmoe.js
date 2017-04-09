@@ -253,13 +253,13 @@ client.on('error', winston.error)
 				description: stripIndents`**LISTEN.moe discord bot by Crawl**
 
 					**Usage:**
-					After adding me to your server, join a voice channel and type \`~~join\` to bind me to that voice channel.
+					After adding me to your server, join a voice channel and type \`${prefix}join\` to bind me to that voice channel.
 					Keep in mind that you need to have the \`Manage Server\` permission to use this command.
 
 					**Commands:**
-					**\\~~join**: Joins the voice channel you are currently in.
-					**\\~~leave**: Leaves the voice channel the bot is currently in.
-					**\\~~np**: Displays the currently playing song.
+					**${prefix}join**: Joins the voice channel you are currently in.
+					**${prefix}leave**: Leaves the voice channel the bot is currently in.
+					**${prefix}np**: Displays the currently playing song.
 
 					For additional commands and help, please visit [Github](https://github.com/WeebDev/listen.moe-discord)`,
 				color: 15473237
