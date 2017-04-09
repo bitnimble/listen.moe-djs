@@ -100,6 +100,12 @@ function currentSongGame() {
 	return setTimeout(currentUsersAndGuildsGame, 20000);
 }
 
+function escapeMarkdown(text) {
+	const unescaped = text.replace(/\\(\*|_|`|~|\\)/g, '$1'); // unescape any "backslashed" character
+	const escaped = unescaped.replace(/(\*|_|`|~|\\)/g, '\\$1'); // escape *, _, `, ~, \
+	return escaped;
+}
+
 client.on('error', winston.error)
 	.on('warn', winston.warn)
 	.on('ready', () => {
@@ -249,6 +255,7 @@ client.on('error', winston.error)
 				thumbnail: { url: 'http://i.imgur.com/Jfz6qak.png' }
 			});
 		} else if (message.startsWith(`${prefix}help`)) {
+			const escapedPrefix = escapeMarkdown(prefix);
 			return msg.channel.sendEmbed({
 				description: stripIndents`**LISTEN.moe discord bot by Crawl**
 
@@ -257,9 +264,9 @@ client.on('error', winston.error)
 					Keep in mind that you need to have the \`Manage Server\` permission to use this command.
 
 					**Commands:**
-					**${prefix}join**: Joins the voice channel you are currently in.
-					**${prefix}leave**: Leaves the voice channel the bot is currently in.
-					**${prefix}np**: Displays the currently playing song.
+					**${escapedPrefix}join**: Joins the voice channel you are currently in.
+					**${escapedPrefix}leave**: Leaves the voice channel the bot is currently in.
+					**${escapedPrefix}np**: Displays the currently playing song.
 
 					For additional commands and help, please visit [Github](https://github.com/WeebDev/listen.moe-discord)`,
 				color: 15473237
@@ -324,8 +331,9 @@ client.on('error', winston.error)
 			}
 
 			winston.info(`[SHARD: ${client.shard.id}] PREFIX CHANGE: "${msg.content.substr(prefix.length + 7)}" ON GUILD ${msg.guild.name} (${msg.guild.id})`);
-			guilds.set(msg.guild.id, 'prefix', msg.content.substr(prefix.length + 7));
-			return msg.channel.sendMessage(`Prefix changed to \`${msg.content.substr(prefix.length + 7)}\` (⌒_⌒;)`);
+			const newPrefix = msg.content.substr(prefix.length + 7);
+			guilds.set(msg.guild.id, 'prefix', newPrefix);
+			return msg.channel.sendMessage(`Prefix changed to ${escapeMarkdown(newPrefix)} (⌒_⌒;)`);
 		} else if (message.startsWith(`${prefix}ignore`)) {
 			if (!config.owners.includes(msg.author.id) && !manageGuild) {
 				return msg.reply('only a member with manage guild permission can change ignored channels, gomen! <(￢0￢)>');
