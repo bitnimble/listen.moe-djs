@@ -1,7 +1,7 @@
 ![LISTEN.moe](https://i.imgur.com/t8Zg2YJ.jpg)
-# Official listen.moe discord bot
+# ~Official~ Listen.moe discord bot
 
-The official discord bot that streams from [listen.moe](https://listen.moe) to your discord server. [Add it to your server here!](https://discordapp.com/oauth2/authorize?&client_id=222167140004790273&scope=bot&permissions=36702208)
+The ~official~ deprecated discord bot that streams from [listen.moe](https://listen.moe) to your discord server. Check out the migrated project over [here](https://github.com/WeebDev/Listen.moe-Discord)!
 
 ## Usage
 
